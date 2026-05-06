@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIOS/UEFI Boot Log Analyzer - BIOS Code Flow 學習工具</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --card-bg: #f8f9fa;
+            --border: #dee2e6;
+            --text: #212529;
+            --text-secondary: #6c757d;
+            --accent: #1a73e8;
+            --accent2: #198754;
+            --accent3: #b8860b;
+            --accent4: #c0392b;
+            --accent5: #6f42c1;
+            --accent6: #0d6efd;
+            --accent7: #157347;
+            --accent8: #d93025;
+            --tag-sec: #c0392b;
+            --tag-pei: #b8860b;
+            --tag-dxe: #1a73e8;
+            --tag-bds: #198754;
+            --tag-tsl: #6f42c1;
+            --tag-rt: #0d6efd;
+            --tag-al: #e67e22;
+            --tag-power: #d93025;
+            --highlight-row: #e8f0fe;
+            --highlight-row2: #fef9e7;
+            --code-bg: #f5f5f5;
+            --toast-bg: #198754;
+            --upload-bg: #fafafa;
+            --upload-border: #dee2e6;
+            --badge-bg-power: #fce8e6;
+            --badge-bg-sec: #fce8e6;
+            --badge-bg-pei: #fef7e0;
+            --badge-bg-dxe: #e8f0fe;
+            --badge-bg-bds: #e6f4ea;
+            --badge-bg-tsl: #f3e8fd;
+            --badge-bg-rt: #e8f0fe;
+            --badge-bg-al: #fef0e0;
+            --badge-bg-total: #f1f3f4;
+            --badge-text-power: #c5221f;
+            --badge-text-sec: #c5221f;
+            --badge-text-pei: #8b6914;
+            --badge-text-dxe: #1a5dc4;
+            --badge-text-bds: #137333;
+            --badge-text-tsl: #5b2ea3;
+            --badge-text-rt: #0842a0;
+            --badge-text-al: #c0520a;
+            --badge-text-total: #5f6368;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --transition: 0.2s ease;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', 'Noto Sans TC', 'Consolas', 'Courier New', monospace;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        header h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        header .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        .upload-section {
+            background: var(--upload-bg);
+            border: 2px dashed var(--upload-border);
+            border-radius: var(--radius-lg);
+            padding: 40px 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+        .upload-section:hover,
+        .upload-section.drag-over {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-md);
+            background: #f0f7ff;
+        }
+        .upload-section input[type="file"] {
+            display: none;
+        }
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+        .upload-section .btn {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            transition: background var(--transition), box-shadow var(--transition);
+            margin: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+        .upload-section .btn:hover {
+            background: #1557b0;
+            box-shadow: var(--shadow-md);
+        }
+        .upload-section .btn-secondary {
+            background: #fff;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .upload-section .btn-secondary:hover {
+            background: #f1f3f4;
+            border-color: #b0b8c1;
+        }
+        .upload-section p {
+            color: var(--text-secondary);
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+            align-items: center;
+        }
+        .stat-badge {
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            border: 1px solid transparent;
+            box-shadow: var(--shadow-sm);
+        }
+        .stat-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .stat-badge.active {
+            border: 2px solid #555;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+            transform: translateY(-2px);
+        }
+        .badge-power {
+            background: var(--badge-bg-power);
+            color: var(--badge-text-power);
+            border-color: #f5c6cb;
+        }
+        .badge-sec {
+            background: var(--badge-bg-sec);
+            color: var(--badge-text-sec);
+            border-color: #f5c6cb;
+        }
+        .badge-pei {
+            background: var(--badge-bg-pei);
+            color: var(--badge-text-pei);
+            border-color: #f0d78c;
+        }
+        .badge-dxe {
+            background: var(--badge-bg-dxe);
+            color: var(--badge-text-dxe);
+            border-color: #b6d4fe;
+        }
+        .badge-bds {
+            background: var(--badge-bg-bds);
+            color: var(--badge-text-bds);
+            border-color: #a3d7b5;
+        }
+        .badge-tsl {
+            background: var(--badge-bg-tsl);
+            color: var(--badge-text-tsl);
+            border-color: #d4bff9;
+        }
+        .badge-rt {
+            background: var(--badge-bg-rt);
+            color: var(--badge-text-rt);
+            border-color: #b6d4fe;
+        }
+        .badge-al {
+            background: var(--badge-bg-al);
+            color: var(--badge-text-al);
+            border-color: #f8c994;
+        }
+        .badge-total {
+            background: var(--badge-bg-total);
+            color: var(--badge-text-total);
+            border-color: #d0d5dd;
+        }
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            margin-bottom: 0;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0;
+            background: #fafafa;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            overflow: hidden;
+        }
+        .tab-btn {
+            padding: 11px 18px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all var(--transition);
+            white-space: nowrap;
+            border-radius: 8px 8px 0 0;
+            position: relative;
+        }
+        .tab-btn:hover {
+            color: var(--text);
+            background: #f0f2f5;
+        }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            font-weight: 700;
+            background: #fff;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .tab-content {
+            display: none;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+            padding: 20px;
+            max-height: 65vh;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            box-shadow: var(--shadow-sm);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-content .log-line {
+            padding: 3px 8px;
+            border-radius: 4px;
+            transition: background var(--transition);
+            border-left: 3px solid transparent;
+        }
+        .tab-content .log-line:hover {
+            background: var(--highlight-row);
+            border-left-color: var(--accent);
+        }
+        .tab-content .log-line.dup {
+            color: var(--text-secondary);
+            font-style: italic;
+            opacity: 0.75;
+        }
+        .log-line .count-tag {
+            display: inline-block;
+            background: #e9ecef;
+            color: #495057;
+            font-size: 0.7rem;
+            padding: 1px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            vertical-align: middle;
+            font-weight: 600;
+            border: 1px solid #dee2e6;
+        }
+        .enum-table-wrap {
+            overflow-x: auto;
+            background: #fff;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+        .enum-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin: 10px 0;
+        }
+        .enum-table th,
+        .enum-table td {
+            border: 1px solid var(--border);
+            padding: 9px 14px;
+            text-align: left;
+        }
+        .enum-table th {
+            background: #f1f3f4;
+            color: #333;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+        }
+        .enum-table tr:nth-child(even) td {
+            background: #fafbfc;
+        }
+        .enum-table tr:hover td {
+            background: var(--highlight-row);
+        }
+        .enum-table code {
+            background: #f1f3f4;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            color: #1a5dc4;
+            border: 1px solid #e0e0e0;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .summary-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition);
+        }
+        .summary-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .summary-card .num {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .summary-card .lbl {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .collapsible {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--accent);
+            padding: 6px 0;
+            user-select: none;
+        }
+        .collapsible::before {
+            content: '▸ ';
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        .collapsible.open::before {
+            transform: rotate(90deg);
+        }
+        .collapsible-content {
+            display: none;
+            padding-left: 16px;
+            border-left: 2px solid var(--border);
+            margin: 4px 0 8px 0;
+        }
+        .collapsible-content.open {
+            display: block;
+        }
+        .highlight-keyword {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .highlight-warn {
+            color: var(--accent3);
+        }
+        .highlight-error {
+            color: var(--accent4);
+        }
+        .highlight-success {
+            color: var(--accent2);
+        }
+        .timeline-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .key-events-box {
+            background: #fffdf5;
+            border-left: 3px solid var(--accent3);
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.83rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .key-events-box strong {
+            color: #8b6914;
+        }
+        @media (max-width: 768px) {
+            .tab-btn {
+                padding: 8px 10px;
+                font-size: 0.78rem;
+            }
+            .stat-badge {
+                font-size: 0.75rem;
+                padding: 4px 10px;
+            }
+            .tab-content {
+                max-height: 45vh;
+                font-size: 0.72rem;
+            }
+            header h1 {
+                font-size: 1.4rem;
+            }
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--toast-bg);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: fadeInOut 2.5s forwards;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            15% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            85% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+        }
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 12px;
+        }
+        #actionBar button {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            padding: 11px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            transition: background var(--transition), box-shadow var(--transition);
+            margin: 6px;
+            box-shadow: var(--shadow-sm);
+        }
+        #actionBar button:hover {
+            background: #1557b0;
+            box-shadow: var(--shadow-md);
+        }
+        #actionBar button.btn-secondary {
+            background: #fff;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        #actionBar button.btn-secondary:hover {
+            background: #f1f3f4;
+            border-color: #b0b8c1;
+        }
+        h3 {
+            color: #333;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 BIOS/UEFI Boot Log Analyzer</h1>
+            <p class="subtitle">依照 <strong>Power On → SEC → PEI → DXE → BDS → TSL → RT → AL</strong> 階段分析 • 去重展示 • 附 Enum 對照表</p>
+        </header>
+
+        <!-- 上傳區域 -->
+        <div class="upload-section" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <p>拖拽 BIOS 日誌檔到此處，或點擊選擇檔</p>
+            <input type="file" id="fileInput" accept=".log,.txt,.LOG,.TXT">
+            <button class="btn" onclick="document.getElementById('fileInput').click()">📎 選擇檔</button>
+            <button class="btn btn-secondary" id="btnLoadSample" style="display:none;">📋 載入分析結果</button>
+            <p style="font-size:0.8rem;color:var(--text-secondary)">支持 .log / .txt 格式 • 最大 50MB</p>
+        </div>
+
+        <!-- 統計概覽 -->
+        <div id="statsContainer" style="display:none;">
+            <h3 style="margin-bottom:10px;">📊 啟動階段概覽</h3>
+            <div class="stats-bar" id="statsBar"></div>
+            <div class="summary-grid" id="summaryGrid"></div>
+        </div>
+
+        <!-- 階段標籤頁 -->
+        <div id="tabNavContainer" style="display:none;">
+            <div class="tab-nav" id="tabNav"></div>
+            <div id="tabContents"></div>
+        </div>
+
+        <!-- Enum 對照表 -->
+        <div id="enumContainer" style="display:none;margin-top:24px;">
+            <h3 style="margin-bottom:10px;">📚 常見 Enum 數值對照表</h3>
+            <div class="tab-nav" id="enumTabNav"></div>
+            <div id="enumTabContents"></div>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div id="actionBar" style="display:none;text-align:center;margin-top:24px;">
+            <button onclick="downloadReport()">📥 下載 HTML 分析報告</button>
+            <button class="btn-secondary" onclick="resetAll()">🔄 清除並重新上傳</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全域狀態 ====================
+        let analysisResult = null;
+        const STAGE_NAMES = ['Power On', 'SEC', 'PEI', 'DXE', 'BDS', 'TSL', 'RT', 'AL (Shutdown)'];
+        const STAGE_KEYS = ['power_on', 'sec', 'pei', 'dxe', 'bds', 'tsl', 'rt', 'al'];
+        const STAGE_COLORS = ['#d93025', '#c0392b', '#b8860b', '#1a73e8', '#198754', '#6f42c1', '#0d6efd',
+            '#e67e22'
+        ];
+        const STAGE_BADGE_CLASSES = ['badge-power', 'badge-sec', 'badge-pei', 'badge-dxe', 'badge-bds', 'badge-tsl',
+            'badge-rt', 'badge-al'
+        ];
+
+        // ==================== 階段檢測關鍵字（修正版） ====================
+        const STAGE_PATTERNS = [
+            // Power On - 上電階段：平台初始化、早期硬體探測
+            {
+                stage: 'power_on',
+                patterns: [
+                    /PrintPeiCoreEntryPointParam/i,
+                    /PlatformInit/i,
+                    /FspHobList/i,
+                    /StartOfRange/i,
+                    /EndOfRange/i,
+                    /PlatformInitializeCpuData/i,
+                    /PlatformInitializeDimmData/i,
+                    /\[PEI System Information\]/i,
+                    /Total Memory:/i,
+                    /Memory Speed:/i
+                ]
+            },
+            // SEC - Security Phase：CPU初始化、CAR設置、Temp RAM
+            {
+                stage: 'sec',
+                patterns: [
+                    /SecStartup\(\)/i,
+                    /SecPlatformMain/i,
+                    /SecStartupPhase2/i,
+                    /BootFirmwareVolume/i,
+                    /TemporaryRam/i,
+                    /PeiTemporaryRam/i,
+                    /TempRAM Base/i,
+                    /StackBase/i,
+                    /StackSize/i,
+                    /PeiCoreEntryPoint:/i
+                ]
+            },
+            // PEI - Pre-EFI Initialization：PEIM載入、PPI服務、記憶體訓練
+            {
+                stage: 'pei',
+                patterns: [
+                    /PeiCore\.Entry/i,
+                    /Loading PEIM/i,
+                    /Install PPI:/i,
+                    /Register PPI Notify:/i,
+                    /Notify: PPI:/i,
+                    /DiscoverPeimsAndOrderWithApriori/i,
+                    /PROGRESS CODE: V[0-9A-F]/i,
+                    /Install Efi Memory/i,
+                    /Temp Stack/i,
+                    /PeiCore\.Mem\.Entry/i,
+                    /DxeIpl Entry/i,
+                    /Install PPI:.*EfiDxeIpl/i,
+                    /MRC/i,
+                    /Memory.*Initial/i,
+                    /\[PEI System/i,
+                    /MemoryRanges/i,
+                    /MTRR Settings/i,
+                    /FspData:/i,
+                    /SAL CALLTABLE/i,
+                    /KTI Init/i,
+                    /SsaLoader/i,
+                    /RC Version:/i
+                ]
+            },
+            // DXE - Driver Execution Environment：驅動載入、Protocol服務、PCI枚舉
+            {
+                stage: 'dxe',
+                patterns: [
+                    /DXE-Core\.Entry/i,
+                    /InstallProtocolInterface:/i,
+                    /Loading driver/i,
+                    /ProtectUefiImageCommon/i,
+                    /SMM IPL/i,
+                    /PiSmmCoreImageBase/i,
+                    /SmmInstallProtocolInterface:/i,
+                    /PciHostBrg: Initializing/i,
+                    /PciBus:.*STARTING/i,
+                    /DxeReportStatusCode.*0x68/i,
+                    /HB: Got HostBridge Info/i,
+                    /Memory Allocation 0x/i,
+                    /FV Hob\s/i,
+                    /FV2 Hob/i,
+                    /FV3 Hob/i,
+                    /SetUefiImageMemoryAttributes/i,
+                    /PciBus:.*STARTING\.\.\./i
+                ]
+            },
+            // BDS - Boot Device Selection：啟動設備選擇、Console初始化
+            {
+                stage: 'bds',
+                patterns: [
+                    /BDS Started/i,
+                    /Connecting Drivers/i,
+                    /DxeReportStatusCode.*0x90/i,
+                    /DxeReportStatusCode.*0x91/i,
+                    /DxeReportStatusCode.*0x92/i,
+                    /OptRomPolicy/i,
+                    /AmiBdsConnectDrivers/i,
+                    /Console.*connect/i,
+                    /Video select/i,
+                    /SIO Initialization/i,
+                    /PCI Bus Initialization/i,
+                    /PciRootBrg: Host/i,
+                    /Console redirection/i,
+                    /BDS execution policy/i
+                ]
+            },
+            // TSL - Transient System Load：OS Boot Loader過渡階段
+            {
+                stage: 'tsl',
+                patterns: [
+                    /ReadyToBoot/i,
+                    /LegacyBoot/i,
+                    /BootManager/i,
+                    /BootOption/i,
+                    /EFI Boot Device/i,
+                    /BootOrder/i,
+                    /BootManagerPolicy/i,
+                    /IPMI Boot:/i,
+                    /centos/i,
+                    /shimx64\.efi/i,
+                    /grub/i,
+                    /Linux.*EFI/i,
+                    /SmbiosIFWI/i,
+                    /Filter Smbios Table/i
+                ]
+            },
+            // RT - Runtime：OS接管、ExitBootServices、Runtime Services
+            {
+                stage: 'rt',
+                patterns: [
+                    /ExitBootServices/i,
+                    /Runtime.*Entry/i,
+                    /VirtualAddressChange/i,
+                    /SetVirtualAddressMap/i,
+                    /AfterEndOfDxe/i,
+                    /ReadyToBootEvent/i,
+                    /FPDT:.*ExitBootServices/i,
+                    /CpuDxe:.*Paging/i,
+                    /VTD.*Disabled/i,
+                    /IioSecureOnExitBootServices/i,
+                    /AcpiOnExitBootServicesCallback/i,
+                    /SmmReadyToBoot/i,
+                    /OnReadyToBoot/i,
+                    /PrmLoaderEndOfDxe/i
+                ]
+            },
+            // AL - Afterlife/Shutdown：關機/重啟
+            {
+                stage: 'al',
+                patterns: [
+                    /Shutdown/i,
+                    /ResetSystem/i,
+                    /ACPI.*S5/i,
+                    /PowerOff/i,
+                    /SystemOff/i,
+                    /ShutdownSuppression/i,
+                    /EnableShutdownSuppression/i,
+                    /Full Speed Transition/i,
+                    /Topology Discovery/i,
+                    /Program Final IO SAD/i,
+                    /Program Optimum Route/i,
+                    /Check for S3 Resume/i,
+                    /SNC Misc/i,
+                    /Collect Previous Boot Error/i,
+                    /Configure IIO early link/i,
+                    /IioEarlyLinkInit/i,
+                    /Mca.*ShutdownSuppression/i,
+                    /ConfigureShutdownSuppression/i
+                ]
+            },
+        ];
+
+        function detectStage(line) {
+            // 從後往前匹配，確保更精確的階段優先
+            for (let i = STAGE_PATTERNS.length - 1; i >= 0; i--) {
+                for (const pat of STAGE_PATTERNS[i].patterns) {
+                    if (pat.test(line)) return STAGE_PATTERNS[i].stage;
+                }
+            }
+            return null;
+        }
+
+        // ==================== 文件處理 ====================
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const btnLoadSample = document.getElementById('btnLoadSample');
+
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault();
+            uploadArea.classList.add('drag-over'); });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('drag-over'); });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) processFile(file);
+        });
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) processFile(file);
+        });
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target === uploadArea || e.target.closest('.upload-icon') || e.target.tagName === 'P') {
+                fileInput.click();
+            }
+        });
+
+        function processFile(file) {
+            if (file.size > 50 * 1024 * 1024) {
+                alert('檔案過大，請上傳小於50MB的文件');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function() {
+                const text = reader.result;
+                analysisResult = analyzeLog(text);
+                renderAll(analysisResult);
+                showToast('✅ 分析完成！共解析 ' + analysisResult.totalLines.toLocaleString() + ' 行日誌');
+            };
+            reader.onerror = function() { alert('讀取檔案失敗，請重試'); };
+            reader.readAsText(file);
+            uploadArea.querySelector('p').textContent = '正在分析: ' + file.name + ' ...';
+        }
+
+        // ==================== 日誌分析 ====================
+        function analyzeLog(text) {
+            const lines = text.split(/\r?\n/);
+            const stages = {};
+            STAGE_KEYS.forEach(k => {
+                stages[k] = { lines: [], uniqueSet: new Set(), uniqueLines: [], counts: {}, keyEvents: [] };
+            });
+            let currentStage = 'power_on';
+            let totalLines = lines.length;
+            let stageLineCounts = {};
+            STAGE_KEYS.forEach(k => { stageLineCounts[k] = 0; });
+
+            // 統計計數器
+            let peimCount = 0;
+            let ppiInstallCount = 0;
+            let ppiNotifyCount = 0;
+            let driverLoadCount = 0;
+            let protocolInstallCount = 0;
+            let smmDriverCount = 0;
+            let pciDeviceCount = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+                const detected = detectStage(line);
+                if (detected) currentStage = detected;
+                stageLineCounts[currentStage] = (stageLineCounts[currentStage] || 0) + 1;
+                stages[currentStage].lines.push({ index: i, text: line });
+
+                // 去重
+                const normalized = line.replace(/\d+/g, '#').replace(/0x[0-9A-Fa-f]+/g, '0x#').trim();
+                if (!stages[currentStage].uniqueSet.has(normalized)) {
+                    stages[currentStage].uniqueSet.add(normalized);
+                    stages[currentStage].uniqueLines.push({ index: i, text: line, count: 1, normalized });
+                } else {
+                    const existing = stages[currentStage].uniqueLines.find(u => u.normalized === normalized);
+                    if (existing) existing.count++;
+                }
+
+                // 關鍵事件統計
+                if (/Loading PEIM/i.test(line)) peimCount++;
+                if (/Install PPI:/i.test(line)) ppiInstallCount++;
+                if (/Register PPI Notify:/i.test(line) || /Notify: PPI:/i.test(line)) ppiNotifyCount++;
+                if (/Loading driver/i.test(line)) driverLoadCount++;
+                if (/InstallProtocolInterface:/i.test(line)) protocolInstallCount++;
+                if (/SmmInstallProtocolInterface:/i.test(line)) smmDriverCount++;
+                if (/Probing PCI Device/i.test(line)) pciDeviceCount++;
+
+                // 里程碑事件
+                if (/PeiCore\.Entry/i.test(line))
+                    stages['pei'].keyEvents.push({ index: i, text: '▶ PEI Core 入口', type: 'milestone' });
+                if (/DXE-Core\.Entry/i.test(line))
+                    stages['dxe'].keyEvents.push({ index: i, text: '▶ DXE Core 入口', type: 'milestone' });
+                if (/BDS Started/i.test(line))
+                    stages['bds'].keyEvents.push({ index: i, text: '▶ BDS 階段開始', type: 'milestone' });
+                if (/DxeReportStatusCode.*0x90/i.test(line) && !stages['bds'].keyEvents.some(e => e.text.includes(
+                        'BDS')))
+                    stages['bds'].keyEvents.push({ index: i, text: '▶ BDS 階段開始 (0x90)', type: 'milestone' });
+                if (/MRC.*Success/i.test(line) || /MRC.*status = Success/i.test(line))
+                    stages['pei'].keyEvents.push({ index: i, text: '✅ MRC (Memory Reference Code) 訓練成功',
+                        type: 'success' });
+                if (/Install Efi Memory/i.test(line) || /System.*Memory.*Initial/i.test(line))
+                    stages['pei'].keyEvents.push({ index: i, text: '💾 系統記憶體初始化完成', type: 'success' });
+                if (/Total Memory:/i.test(line))
+                    stages['power_on'].keyEvents.push({ index: i, text: '💾 ' + line.trim(), type: 'success' });
+                if (/BIOS ID:/i.test(line))
+                    stages['power_on'].keyEvents.push({ index: i, text: '🔖 ' + line.trim(), type: 'milestone' });
+                if (/ERROR:/i.test(line) || /Error:/i.test(line)) {
+                    const s = stages[currentStage];
+                    if (s && s.keyEvents && s.keyEvents.length < 30) {
+                        s.keyEvents.push({ index: i, text: '⚠️ ' + line.substring(0, 220).trim(), type: 'error' });
+                    }
+                }
+                if (/ExitBootServices/i.test(line))
+                    stages['rt'].keyEvents.push({ index: i, text: '🔚 ExitBootServices 調用', type: 'milestone' });
+                if (/ShutdownSuppression/i.test(line))
+                    stages['al'].keyEvents.push({ index: i, text: '⚠️ ' + line.trim(), type: 'error' });
+            }
+
+            return {
+                totalLines,
+                stageLineCounts,
+                stages,
+                stats: {
+                    peimCount,
+                    ppiInstallCount,
+                    ppiNotifyCount,
+                    driverLoadCount,
+                    protocolInstallCount,
+                    smmDriverCount,
+                    pciDeviceCount
+                }
+            };
+        }
+
+        // ==================== 渲染 ====================
+        function renderAll(result) {
+            document.getElementById('statsContainer').style.display = 'block';
+            document.getElementById('tabNavContainer').style.display = 'block';
+            document.getElementById('enumContainer').style.display = 'block';
+            document.getElementById('actionBar').style.display = 'block';
+            document.getElementById('btnLoadSample').style.display = 'inline-block';
+
+            renderStatsBar(result);
+            renderSummaryGrid(result);
+            renderTabs(result);
+            renderEnumTables();
+            document.getElementById('uploadArea').querySelector('p').textContent =
+                '拖拽 BIOS 日誌檔到此處，或點擊選擇檔（可重新上傳）';
+        }
+
+        function renderStatsBar(result) {
+            const bar = document.getElementById('statsBar');
+            let html = '';
+            STAGE_KEYS.forEach((k, i) => {
+                const count = result.stageLineCounts[k] || 0;
+                if (count > 0) {
+                    html +=
+                        `<span class="stat-badge ${STAGE_BADGE_CLASSES[i]}" data-stage="${k}" title="點擊查看 ${STAGE_NAMES[i]} 階段詳情">${STAGE_NAMES[i]}: <strong>${count.toLocaleString()}</strong> 行</span>`;
+                }
+            });
+            html +=
+                `<span class="stat-badge badge-total">總計: <strong>${result.totalLines.toLocaleString()}</strong> 行</span>`;
+            bar.innerHTML = html;
+
+            bar.querySelectorAll('.stat-badge[data-stage]').forEach(badge => {
+                badge.addEventListener('click', () => {
+                    const stageKey = badge.dataset.stage;
+                    const tabBtn = document.querySelector(`.tab-btn[data-stage="${stageKey}"]`);
+                    if (tabBtn) tabBtn.click();
+                    document.getElementById('tabNavContainer').scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+        }
+
+        function renderSummaryGrid(result) {
+            const grid = document.getElementById('summaryGrid');
+            const s = result.stats;
+            const cards = [
+                { num: s.peimCount, lbl: 'PEI Modules (PEIM) 載入', color: '#b8860b' },
+                { num: s.ppiInstallCount, lbl: 'PPI Install 次數', color: '#c0392b' },
+                { num: s.ppiNotifyCount, lbl: 'PPI Notify 次數', color: '#e67e22' },
+                { num: s.driverLoadCount, lbl: 'DXE Driver 載入', color: '#1a73e8' },
+                { num: s.protocolInstallCount, lbl: 'Protocol Install', color: '#198754' },
+                { num: s.smmDriverCount, lbl: 'SMM Driver 載入', color: '#6f42c1' },
+                { num: s.pciDeviceCount, lbl: 'PCI 設備探測', color: '#0d6efd' },
+                { num: result.totalLines, lbl: '日誌總行數', color: '#5f6368' },
+            ];
+            grid.innerHTML = cards.map(c =>
+                `<div class="summary-card"><div class="num" style="color:${c.color}">${c.num.toLocaleString()}</div><div class="lbl">${c.lbl}</div></div>`
+            ).join('');
+        }
+
+        function renderTabs(result) {
+            const tabNav = document.getElementById('tabNav');
+            const tabContents = document.getElementById('tabContents');
+            let navHtml = '';
+            let contentsHtml = '';
+
+            STAGE_KEYS.forEach((k, i) => {
+                const stageData = result.stages[k];
+                const count = result.stageLineCounts[k] || 0;
+                const uniqueCount = stageData ? stageData.uniqueLines.length : 0;
+                const activeClass = i === 0 ? ' active' : '';
+                navHtml +=
+                    `<button class="tab-btn${activeClass}" data-stage="${k}" onclick="switchTab('${k}')">${STAGE_NAMES[i]} <small>(${count.toLocaleString()}行 / 去重${uniqueCount.toLocaleString()})</small></button>`;
+
+                let contentHtml = '';
+                if (stageData && stageData.uniqueLines.length > 0) {
+                    // 關鍵事件區塊
+                    if (stageData.keyEvents && stageData.keyEvents.length > 0) {
+                        contentHtml +=
+                            '<div class="key-events-box"><strong>🔑 關鍵事件:</strong><br>';
+                        stageData.keyEvents.forEach(ev => {
+                            const emoji = ev.type === 'milestone' ? '🔷' : ev.type === 'success' ? '✅' :
+                                '⚠️';
+                            contentHtml +=
+                                `  ${emoji} <span style="color:var(--accent);font-weight:600;">行#${ev.index+1}</span>: ${ev.text}<br>`;
+                        });
+                        contentHtml += '</div>';
+                    }
+                    // 去重後的日誌行
+                    const maxShow = Math.min(stageData.uniqueLines.length, 800);
+                    for (let j = 0; j < maxShow; j++) {
+                        const u = stageData.uniqueLines[j];
+                        const countTag = u.count > 1 ?
+                            `<span class="count-tag">×${u.count}</span>` : '';
+                        const dupClass = u.count > 5 ? ' dup' : '';
+                        contentHtml +=
+                            `<div class="log-line${dupClass}"><span style="color:#999;">#${u.index+1}</span> ${escapeHTML(u.text)}${countTag}</div>`;
+                    }
+                    if (stageData.uniqueLines.length > maxShow) {
+                        contentHtml +=
+                            `<div style="color:var(--text-secondary);text-align:center;padding:10px;">... 還有 ${(stageData.uniqueLines.length - maxShow).toLocaleString()} 條去重後的日誌（已折疊）</div>`;
+                    }
+                } else if (count > 0) {
+                    contentHtml =
+                        '<div style="color:var(--text-secondary);padding:20px;text-align:center;">該階段日誌較少，請查看原始日誌</div>';
+                } else {
+                    contentHtml =
+                        '<div style="color:var(--text-secondary);padding:20px;text-align:center;">此日誌未包含該階段內容</div>';
+                }
+                contentsHtml +=
+                    `<div class="tab-content${activeClass}" id="tabContent_${k}"><div style="margin-bottom:8px;color:var(--text-secondary);font-size:0.8rem;">📋 ${STAGE_NAMES[i]} 階段 — 原始 ${count.toLocaleString()} 行 → 去重後 ${uniqueCount.toLocaleString()} 條獨特日誌</div>${contentHtml}</div>`;
+            });
+
+            tabNav.innerHTML = navHtml;
+            tabContents.innerHTML = contentsHtml;
+
+            // 預設啟動第一個有內容的tab
+            const firstActiveStage = STAGE_KEYS.find(k => (result.stageLineCounts[k] || 0) > 0) || 'power_on';
+            switchTab(firstActiveStage);
+        }
+
+        function switchTab(stageKey) {
+            document.querySelectorAll('#tabNav .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#tabContents .tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.stat-badge').forEach(b => b.classList.remove('active'));
+            const btn = document.querySelector(`#tabNav .tab-btn[data-stage="${stageKey}"]`);
+            const content = document.getElementById('tabContent_' + stageKey);
+            if (btn) btn.classList.add('active');
+            if (content) content.classList.add('active');
+            const statBadge = document.querySelector(`.stat-badge[data-stage="${stageKey}"]`);
+            if (statBadge) statBadge.classList.add('active');
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ==================== Enum 對照表 ====================
+        function renderEnumTables() {
+            const enumTabNav = document.getElementById('enumTabNav');
+            const enumTabContents = document.getElementById('enumTabContents');
+            const enumCategories = [
+                { id: 'uefi_phases', name: 'UEFI PI 啟動階段', content: buildEnumTable_Phases() },
+                { id: 'progress_codes', name: 'PROGRESS CODE', content: buildEnumTable_ProgressCodes() },
+                { id: 'memory_types', name: 'EfiMemoryType', content: buildEnumTable_MemoryTypes() },
+                { id: 'hob_types', name: 'HOB 類型', content: buildEnumTable_HobTypes() },
+                { id: 'pci_port_types', name: 'PCIe Port 類型', content: buildEnumTable_PciPortTypes() },
+                { id: 'ppi_common', name: '常見 PPI GUID', content: buildEnumTable_PpiGuids() },
+                { id: 'protocol_common', name: '常見 Protocol GUID', content: buildEnumTable_ProtocolGuids() },
+                { id: 'boot_modes', name: 'Boot Mode', content: buildEnumTable_BootModes() },
+                { id: 'reset_types', name: 'Reset Type', content: buildEnumTable_ResetTypes() },
+            ];
+
+            let navHtml = '';
+            let contentsHtml = '';
+            enumCategories.forEach((cat, i) => {
+                const activeClass = i === 0 ? ' active' : '';
+                navHtml +=
+                    `<button class="tab-btn${activeClass}" data-enum="${cat.id}" onclick="switchEnumTab('${cat.id}')">${cat.name}</button>`;
+                contentsHtml +=
+                    `<div class="tab-content${activeClass}" id="enumContent_${cat.id}"><div class="enum-table-wrap">${cat.content}</div></div>`;
+            });
+            enumTabNav.innerHTML = navHtml;
+            enumTabContents.innerHTML = contentsHtml;
+        }
+
+        function switchEnumTab(id) {
+            document.querySelectorAll('#enumTabNav .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#enumTabContents .tab-content').forEach(c => c.classList.remove('active'));
+            const btn = document.querySelector(`#enumTabNav .tab-btn[data-enum="${id}"]`);
+            const content = document.getElementById('enumContent_' + id);
+            if (btn) btn.classList.add('active');
+            if (content) content.classList.add('active');
+        }
+
+        function buildEnumTable_Phases() {
+            const data = [
+                ['Power On', '上電', '平台電源開啟，硬體初始化', 'G3 → S5，早期CPU/記憶體探測'],
+                ['SEC', 'Security Phase', 'CPU初始化、CAR設置、驗證PEI Core', 'Pre-EFI Initialization，Temp RAM'],
+                ['PEI', 'Pre-EFI Initialization', '記憶體初始化、MRC訓練、準備DXE環境', 'PEIM載入、PPI服務'],
+                ['DXE', 'Driver Execution Environment', '驅動載入、PCI枚舉、SMM初始化', 'Protocol服務、UEFI驅動'],
+                ['BDS', 'Boot Device Selection', '啟動設備選擇、Console初始化', 'Boot Manager、Boot Option'],
+                ['TSL', 'Transient System Load', 'OS Boot Loader載入', '過渡階段，載入OS Kernel'],
+                ['RT', 'Runtime', 'OS運行、UEFI Runtime Services', 'SMM持續運行、ACPI服務'],
+                ['AL', 'Afterlife / Shutdown', '系統關機/重啟', 'S5/G3狀態，Power Cycle'],
+            ];
+            return buildTable(['階段', '全稱', '描述', '關鍵特徵'], data);
+        }
+
+        function buildEnumTable_ProgressCodes() {
+            const data = [
+                ['V03020002', 'PEI', 'PEIM 開始載入 (PROGRESS CODE)'],
+                ['V03020003', 'PEI', 'PEIM 載入完成'],
+                ['V03041000', 'DXE', 'DXE Core 啟動 (對應 0x60)'],
+                ['V03021001', 'PEI', 'DXE IPL 啟動 (對應 0x4F)'],
+                ['V00060001', 'PEI', 'Platform Init 開始階段'],
+                ['V00060002', 'PEI', 'Platform Init 完成階段'],
+                ['V00011001', 'PEI', 'CPU Cache 初始化 (對應 0x33)'],
+                ['V03038Axx', 'PEI', 'TPM 相關操作 (可變子碼)'],
+                ['0x60', 'DXE', 'DXE Core Started'],
+                ['0x68', 'DXE', 'PCI Host Bridge Init'],
+                ['0x70', 'DXE', 'SB DXE Initialization'],
+                ['0x90', 'BDS', 'BDS Started'],
+                ['0x91', 'BDS', 'Connecting Drivers'],
+                ['0x92', 'BDS', 'PCI Bus Initialization'],
+                ['0x94', 'BDS', 'PCI Bus Enumeration'],
+                ['0x97', 'BDS', 'Console Output devices connect'],
+                ['0x99', 'BDS', 'SIO Initialization'],
+                ['0x9A', 'BDS', 'USB Initialization'],
+                ['0x9B', 'BDS', 'USB Detect'],
+            ];
+            return buildTable(['Code', '階段', '說明'], data);
+        }
+
+        function buildEnumTable_MemoryTypes() {
+            const data = [
+                ['0x00 (EfiReservedMemoryType)', '保留記憶體', '不可使用'],
+                ['0x01 (EfiLoaderCode)', 'Boot Loader 代碼', 'OS Loader 代碼'],
+                ['0x02 (EfiLoaderData)', 'Boot Loader 數據', 'OS Loader 數據'],
+                ['0x03 (EfiBootServicesCode)', 'BS Code', 'Boot Services 代碼'],
+                ['0x04 (EfiBootServicesData)', 'BS Data', 'Boot Services 數據'],
+                ['0x05 (EfiRuntimeServicesCode)', 'RT Code', 'Runtime Services 代碼'],
+                ['0x06 (EfiRuntimeServicesData)', 'RT Data', 'Runtime Services 數據'],
+                ['0x07 (EfiConventionalMemory)', '可用記憶體', '可分配給OS使用'],
+                ['0x08 (EfiUnusableMemory)', '不可用記憶體', '硬體錯誤標記'],
+                ['0x09 (EfiACPIReclaimMemory)', 'ACPI Reclaim', 'OS可用於ACPI'],
+                ['0x0A (EfiACPIMemoryNVS)', 'ACPI NVS', 'ACPI非易失性存儲'],
+                ['0x0B (EfiMemoryMappedIO)', 'MMIO', '記憶體映射I/O'],
+                ['0x0C (EfiMemoryMappedIOPortSpace)', 'MMIO Port Space', 'I/O Port映射'],
+                ['0x0D (EfiPalCode)', 'PAL Code', 'Itanium PAL代碼'],
+                ['0x0E (EfiPersistentMemory)', '持久記憶體', 'NVDIMM等'],
+            ];
+            return buildTable(['值', '名稱', '說明'], data);
+        }
+
+        function buildEnumTable_HobTypes() {
+            const data = [
+                ['0x0001 (EFI_HOB_TYPE_HANDOFF)', 'PHIT HOB', '記憶體邊界資訊'],
+                ['0x0002 (EFI_HOB_TYPE_MEMORY_ALLOCATION)', '記憶體分配 HOB', '描述記憶體分配'],
+                ['0x0003 (EFI_HOB_TYPE_RESOURCE_DESCRIPTOR)', '資源描述 HOB', '描述系統資源'],
+                ['0x0004 (EFI_HOB_TYPE_GUID_EXTENSION)', 'GUID 擴展 HOB', 'FSP用、通用GUID數據'],
+                ['0x0005 (EFI_HOB_TYPE_FV)', 'Firmware Volume HOB', 'FV資訊'],
+                ['0x0006 (EFI_HOB_TYPE_CPU)', 'CPU HOB', 'CPU資訊'],
+                ['0x0007 (EFI_HOB_TYPE_MEMORY_POOL)', '記憶體池 HOB', 'PEI記憶體池'],
+                ['0x0008 (EFI_HOB_TYPE_FV2)', 'FV2 HOB', '擴展FV資訊'],
+                ['0x0009 (EFI_HOB_TYPE_LOAD_PEIM_UNUSED)', 'Load PEIM', '已棄用'],
+                ['0x000C (EFI_HOB_TYPE_UEFI_CAPSULE)', 'Capsule HOB', 'Capsule更新資訊'],
+            ];
+            return buildTable(['值', '名稱', '說明'], data);
+        }
+
+        function buildEnumTable_PciPortTypes() {
+            const data = [
+                ['0x0 (PCI_EXP_PCIE_ENDPOINT)', 'PCIe Endpoint', '標準PCIe端點設備'],
+                ['0x1 (PCI_EXP_PCIE_LEGACY_ENDPOINT)', 'Legacy Endpoint', '傳統PCIe端點'],
+                ['0x4 (PCI_EXP_ROOT_PORT)', 'Root Port', 'PCIe根埠'],
+                ['0x5 (PCI_EXP_UPSTREAM_PORT)', 'Upstream Port', 'Switch上游埠'],
+                ['0x6 (PCI_EXP_DOWNSTREAM_PORT)', 'Downstream Port', 'Switch下游埠'],
+                ['0x7 (PCI_EXP_PCI_BRIDGE)', 'PCIe-to-PCI Bridge', 'PCIe到PCI橋接'],
+                ['0x8 (PCI_EXP_PCIE_BRIDGE)', 'PCI-to-PCIe Bridge', 'PCI到PCIe橋接'],
+                ['0x9 (PCI_EXP_ROOT_COMPLEX_INTEGRATED)', 'RCiEP', 'RC集成端點'],
+                ['0xA (PCI_EXP_ROOT_COMPLEX_EVENT_COLLECTOR)', 'RCEC', 'RC事件收集器'],
+                ['0xB (CXL Device)', 'CXL Device', 'CXL Type-1/2/3設備'],
+            ];
+            return buildTable(['值', '名稱', '說明'], data);
+        }
+
+        function buildEnumTable_PpiGuids() {
+            const data = [
+                ['8C8CE578-8A3D-4F1C...', 'EfiPeiSecurity2 PPI', 'PEI安全服務'],
+                ['5473C07A-3DCB-4DCA...', 'EfiPeiFirmwareVolumeInfo PPI', 'FV資訊通知'],
+                ['EfiPeiLoadFile', 'EfiPeiLoadFile PPI', '檔案載入服務'],
+                ['EfiTemporaryRamDone', 'EfiTemporaryRamDone PPI', '臨時RAM完成信號'],
+                ['Pcd / EfiPeiPcd', 'PCD PPI', '平台配置資料庫'],
+                ['EfiPeiMemoryDiscovered', 'EfiPeiMemoryDiscovered PPI', '記憶體發現通知'],
+                ['EfiEndOfPeiSignal', 'EfiEndOfPeiSignal PPI', 'PEI結束信號'],
+                ['EfiPeiMpServices', 'EfiPeiMpServices PPI', '多處理器服務'],
+                ['EfiDxeIpl', 'EfiDxeIpl PPI', 'DXE IPL入口'],
+                ['FspSiliconInitDone', 'FspSiliconInitDone PPI', 'FSP Silicon Init完成'],
+                ['EfiPeiReset2', 'EfiPeiReset2 PPI', 'PEI重定服務'],
+                ['EfiPeiStall', 'EfiPeiStall PPI', '延遲服務'],
+                ['EfiPeiCpuIoPpiInstalledGuid', 'CPU I/O PPI', 'CPU I/O服務'],
+                ['EfiPeiPciCfg2', 'PCI CFG PPI', 'PCI配置空間訪問'],
+            ];
+            return buildTable(['GUID/名稱', 'PPI 名稱', '說明'], data);
+        }
+
+        function buildEnumTable_ProtocolGuids() {
+            const data = [
+                ['EfiLoadedImage', 'Loaded Image Protocol', '鏡像載入資訊'],
+                ['EfiPciRootBridgeIo', 'PCI Root Bridge I/O', 'PCI根橋I/O'],
+                ['EfiDriverBinding', 'Driver Binding', '驅動綁定'],
+                ['EfiCpuArch', 'CPU Arch Protocol', 'CPU架構服務'],
+                ['EfiSmbios', 'SMBIOS Protocol', 'SMBIOS表管理'],
+                ['EfiAcpiTable', 'ACPI Table Protocol', 'ACPI表管理'],
+                ['EfiSmmBase2', 'SMM Base 2 Protocol', 'SMM基礎服務'],
+                ['EfiSmmCpu', 'SMM CPU Protocol', 'SMM CPU服務'],
+                ['EfiVariableArch', 'Variable Arch Protocol', '變數服務'],
+                ['EfiBdsArch', 'BDS Arch Protocol', 'BDS架構服務'],
+                ['EfiSecurity2Arch', 'Security2 Arch Protocol', '安全架構服務'],
+                ['EfiTimerArch', 'Timer Arch Protocol', '計時器服務'],
+                ['EfiRealTimeClockArch', 'RTC Arch Protocol', 'RTC服務'],
+                ['EfiWatchdogTimerArch', 'Watchdog Timer Arch', '看門狗服務'],
+                ['EfiCapsuleArch', 'Capsule Arch Protocol', 'Capsule更新服務'],
+                ['EfiResetArch', 'Reset Arch Protocol', '重置服務'],
+                ['EfiMpService', 'MP Service Protocol', '多處理器服務'],
+                ['EfiTcg2', 'TCG2 Protocol', 'TPM 2.0服務'],
+                ['EfiHiiDatabase', 'HII Database', 'HII資料庫'],
+                ['EfiHiiConfigRouting', 'HII Config Routing', 'HII配置路由'],
+                ['EfiGraphicsOutput', 'GOP Protocol', '圖形輸出'],
+                ['EfiSimpleTextOut', 'Simple Text Output', '文字輸出'],
+                ['EfiUsb', 'USB Protocol', 'USB堆疊'],
+                ['EfiPciIo', 'PCI I/O Protocol', 'PCI設備I/O'],
+                ['EfiDevicePath', 'Device Path Protocol', '設備路徑'],
+                ['EfiDiskIo', 'Disk I/O Protocol', '磁盤I/O'],
+                ['EfiBlockIo', 'Block I/O Protocol', '塊設備I/O'],
+            ];
+            return buildTable(['GUID/名稱', 'Protocol 名稱', '說明'], data);
+        }
+
+        function buildEnumTable_BootModes() {
+            const data = [
+                ['0x00 (BOOT_WITH_FULL_CONFIGURATION)', '完整配置啟動', '正常完整開機'],
+                ['0x01 (BOOT_WITH_MINIMAL_CONFIGURATION)', '最小配置啟動', '最低硬體配置'],
+                ['0x02 (BOOT_ASSUMING_NO_CONFIGURATION_CHANGES)', '無配置變更啟動', '快速開機'],
+                ['0x03 (BOOT_WITH_FULL_CONFIGURATION_PLUS_DIAGNOSTICS)', '完整配置+診斷', '含診斷模式'],
+                ['0x04 (BOOT_WITH_DEFAULT_SETTINGS)', '默認設置啟動', '載入出廠默認值'],
+                ['0x05 (BOOT_ON_S4_RESUME)', 'S4恢復', '從休眠恢復'],
+                ['0x06 (BOOT_ON_S5_RESUME)', 'S5恢復', '從軟關機恢復'],
+                ['0x10 (BOOT_ON_S2_RESUME)', 'S2恢復', '從S2恢復'],
+                ['0x11 (BOOT_ON_S3_RESUME)', 'S3恢復', '從睡眠恢復'],
+                ['0x12 (BOOT_ON_FLASH_UPDATE)', '固件更新', 'BIOS更新模式'],
+                ['0x20 (BOOT_IN_RECOVERY_MODE)', '復原模式', 'BIOS復原'],
+            ];
+            return buildTable(['值', '名稱', '說明'], data);
+        }
+
+        function buildEnumTable_ResetTypes() {
+            const data = [
+                ['EfiResetCold', '冷開機', '完全硬體重置，斷電重啟'],
+                ['EfiResetWarm', '暖開機', 'CPU重置，記憶體保持'],
+                ['EfiResetShutdown', '關機', '系統完全關機'],
+                ['EfiResetPlatformSpecific', '平台特定', '平台定義的特殊復位'],
+            ];
+            return buildTable(['類型', '名稱', '說明'], data);
+        }
+
+        function buildTable(headers, rows) {
+            let html = '<table class="enum-table"><thead><tr>';
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += '</tr></thead><tbody>';
+            rows.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => html += `<td>${cell}</td>`);
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // ==================== 下載報告 ====================
+        function downloadReport() {
+            if (!analysisResult) { alert('請先上傳並分析日誌檔');
+                return; }
+            const reportHtml = generateReportHTML();
+            const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'BIOS_CodeFlow_Analysis_Report.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('📥 報告下載中...');
+        }
+
+        function generateReportHTML() {
+            const r = analysisResult;
+            let body = '';
+            STAGE_KEYS.forEach((k, i) => {
+                const sd = r.stages[k];
+                const count = r.stageLineCounts[k] || 0;
+                const uniqueCount = sd ? sd.uniqueLines.length : 0;
+                const borderColor = STAGE_COLORS[i];
+                body +=
+                    `<h2 style="color:${borderColor};border-bottom:2px solid ${borderColor};padding-bottom:6px;">${STAGE_NAMES[i]} (${count.toLocaleString()} 行 / 去重 ${uniqueCount.toLocaleString()})</h2>`;
+                if (sd && sd.keyEvents && sd.keyEvents.length > 0) {
+                    body +=
+                        '<div style="background:#fffdf5;border-left:3px solid #b8860b;padding:10px;border-radius:6px;margin:8px 0;"><strong>🔑 關鍵事件:</strong><br>';
+                    sd.keyEvents.forEach(ev => {
+                        body +=
+                            `&nbsp;&nbsp;${ev.type==='milestone'?'🔷':ev.type==='success'?'✅':'⚠️'} 行#${ev.index+1}: ${ev.text}<br>`;
+                    });
+                    body += '</div>';
+                }
+                if (sd && sd.uniqueLines.length > 0) {
+                    const maxShow = Math.min(sd.uniqueLines.length, 600);
+                    body +=
+                        '<pre style="font-size:0.78rem;line-height:1.4;background:#fafafa;padding:10px;border-radius:4px;max-height:400px;overflow-y:auto;border:1px solid #e0e0e0;">';
+                    for (let j = 0; j < maxShow; j++) {
+                        const u = sd.uniqueLines[j];
+                        body +=
+                            `[#${u.index+1}]${u.count>1?' (×'+u.count+')':''} ${u.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}\n`;
+                    }
+                    if (sd.uniqueLines.length > maxShow) body +=
+                        `\n... 還有 ${sd.uniqueLines.length-maxShow} 條去重日誌`;
+                    body += '</pre>';
+                } else if (count === 0) {
+                    body += '<p style="color:#999;">該階段無日誌內容</p>';
+                }
+            });
+            // Enum tables section
+            let enumBody = '<h2>📚 Enum 對照表</h2>';
+            enumBody += '<h3>UEFI PI 啟動階段</h3>' + buildEnumTable_Phases();
+            enumBody += '<h3>PROGRESS CODE</h3>' + buildEnumTable_ProgressCodes();
+            enumBody += '<h3>EfiMemoryType</h3>' + buildEnumTable_MemoryTypes();
+            enumBody += '<h3>HOB 類型</h3>' + buildEnumTable_HobTypes();
+            enumBody += '<h3>PCIe Port 類型</h3>' + buildEnumTable_PciPortTypes();
+            enumBody += '<h3>常見 PPI GUID</h3>' + buildEnumTable_PpiGuids();
+            enumBody += '<h3>常見 Protocol GUID</h3>' + buildEnumTable_ProtocolGuids();
+            enumBody += '<h3>Boot Mode</h3>' + buildEnumTable_BootModes();
+            enumBody += '<h3>Reset Type</h3>' + buildEnumTable_ResetTypes();
+
+            return `<!DOCTYPE html>
+        <html lang="zh-TW">
+        <head><meta charset="UTF-8"><title>BIOS Code Flow 分析報告</title>
+        <style>body{font-family:'Consolas','Courier New',monospace;max-width:1400px;margin:0 auto;padding:20px;background:#fff;color:#333;line-height:1.6}h1{color:#1a73e8}h2{margin-top:24px}pre{white-space:pre-wrap;word-break:break-all}table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid #ddd;padding:6px 10px;text-align:left}th{background:#f1f3f4;color:#333}</style></head>
+        <body><h1>🔧 BIOS/UEFI Code Flow 分析報告</h1><p>總行數: ${r.totalLines.toLocaleString()} | 生成時間: ${new Date().toISOString()}</p>
+        <hr>${body}<hr>${enumBody}<hr><p style="text-align:center;color:#999;">由 BIOS Log Analyzer 生成</p></body></html>`;
+        }
+
+        function resetAll() {
+            analysisResult = null;
+            document.getElementById('statsContainer').style.display = 'none';
+            document.getElementById('tabNavContainer').style.display = 'none';
+            document.getElementById('enumContainer').style.display = 'none';
+            document.getElementById('actionBar').style.display = 'none';
+            document.getElementById('statsBar').innerHTML = '';
+            document.getElementById('summaryGrid').innerHTML = '';
+            document.getElementById('tabNav').innerHTML = '';
+            document.getElementById('tabContents').innerHTML = '';
+            document.getElementById('enumTabNav').innerHTML = '';
+            document.getElementById('enumTabContents').innerHTML = '';
+            document.getElementById('uploadArea').querySelector('p').textContent =
+                '拖拽 BIOS 日誌檔到此處，或點擊選擇檔';
+            fileInput.value = '';
+            showToast('🔄 已清除，請上傳新的日誌檔');
+        }
+
+        function showToast(msg) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2600);
+        }
+
+        // ==================== 初始化 ====================
+        document.getElementById('btnLoadSample').addEventListener('click', function() {
+            if (analysisResult) {
+                showToast('✅ 已載入當前分析結果');
+                document.getElementById('tabNavContainer').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            fileInput.click();
+        });
+
+        // 鍵盤快速鍵
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'o') {
+                e.preventDefault();
+                fileInput.click();
+            }
+            if (e.ctrlKey && e.key === 's' && analysisResult) {
+                e.preventDefault();
+                downloadReport();
+            }
+            if (e.ctrlKey && e.key >= '1' && e.key <= '8') {
+                e.preventDefault();
+                const idx = parseInt(e.key) - 1;
+                const stageKey = STAGE_KEYS[idx];
+                if (stageKey && document.querySelector(`#tabNav .tab-btn[data-stage="${stageKey}"]`)) {
+                    switchTab(stageKey);
+                }
+            }
+        });
+
+        console.log('🔧 BIOS/UEFI Boot Log Analyzer 已就緒 (白底版)');
+        console.log('支持快速鍵: Ctrl+O 打開文件 | Ctrl+1~8 切換階段標籤 | Ctrl+S 下載報告');
+        console.log('支持拖拽上傳 .log/.txt 文件');
+    </script>
+</body>
+</html>
