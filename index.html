@@ -260,39 +260,75 @@
             background: #fff;
             box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
         }
+/* --- 修改後的日誌顯示區域樣式 (表格佈局) --- */
         .tab-content {
             display: none;
             background: #fff;
             border: 1px solid var(--border);
             border-top: none;
             border-radius: 0 0 var(--radius-md) var(--radius-md);
-            padding: 20px;
+            padding: 0; /* 移除 padding 讓表格貼邊 */
             max-height: 65vh;
             overflow-y: auto;
             font-family: 'Consolas', 'Courier New', monospace;
+            box-shadow: var(--shadow-sm);
+        }
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* 固定佈局確保寬度穩定 */
+        }
+        .log-row {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .log-row:hover {
+            background: var(--highlight-row);
+        }		
+/* 行號欄位：鎖定不可選取 */
+        .log-ln {
+            width: 70px;
+            min-width: 70px;
+            text-align: right;
+            padding: 2px 12px;
+            color: #999;
+            background: #f8f9fa;
+            border-right: 2px solid #eee;
+            font-size: 0.75rem;
+            user-select: none; /* 防止選取複製 */
+            -webkit-user-select: none;
+            vertical-align: top;
+            white-space: nowrap;
+        }
+/* 文本內容欄位 */
+        .log-txt {
+            padding: 2px 15px;
             font-size: 0.82rem;
             line-height: 1.5;
             white-space: pre-wrap;
             word-break: break-all;
-            box-shadow: var(--shadow-sm);
+            vertical-align: top;
+            color: var(--text);
         }
-        .tab-content.active {
-            display: block;
-        }
-        .tab-content .log-line {
-            padding: 3px 8px;
-            border-radius: 4px;
-            transition: background var(--transition);
-            border-left: 3px solid transparent;
-        }
-        .tab-content .log-line:hover {
-            background: var(--highlight-row);
-            border-left-color: var(--accent);
-        }
-        .tab-content .log-line.dup {
+        .log-row.dup .log-txt {
             color: var(--text-secondary);
             font-style: italic;
             opacity: 0.75;
+        }
+/* 讓重複次數標籤也不會被選取 */
+        .count-tag {
+            display: inline-block;
+            background: #e9ecef;
+            color: #495057;
+            font-size: 0.7rem;
+            padding: 0px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+            user-select: none; 
+            border: 1px solid #dee2e6;
+            font-weight: 600;
+        }
+        .tab-content.active {
+            display: block;
         }
         .log-line .count-tag {
             display: inline-block;
@@ -525,7 +561,6 @@
             <h1>🔧 BIOS/UEFI Boot Log Analyzer</h1>
             <p class="subtitle">依照 <strong>Power On → SEC → PEI → DXE → BDS → TSL → RT → AL</strong> 階段分析 • 去重展示 • 附 Enum 對照表</p>
         </header>
-
         <!-- 上傳區域 -->
         <div class="upload-section" id="uploadArea">
             <div class="upload-icon">📁</div>
@@ -535,34 +570,29 @@
             <button class="btn btn-secondary" id="btnLoadSample" style="display:none;">📋 載入分析結果</button>
             <p style="font-size:0.8rem;color:var(--text-secondary)">支持 .log / .txt 格式 • 最大 50MB</p>
         </div>
-
         <!-- 統計概覽 -->
         <div id="statsContainer" style="display:none;">
             <h3 style="margin-bottom:10px;">📊 啟動階段概覽</h3>
             <div class="stats-bar" id="statsBar"></div>
             <div class="summary-grid" id="summaryGrid"></div>
         </div>
-
         <!-- 階段標籤頁 -->
         <div id="tabNavContainer" style="display:none;">
             <div class="tab-nav" id="tabNav"></div>
             <div id="tabContents"></div>
         </div>
-
         <!-- Enum 對照表 -->
         <div id="enumContainer" style="display:none;margin-top:24px;">
             <h3 style="margin-bottom:10px;">📚 常見 Enum 數值對照表</h3>
             <div class="tab-nav" id="enumTabNav"></div>
             <div id="enumTabContents"></div>
         </div>
-
         <!-- 操作按鈕 -->
         <div id="actionBar" style="display:none;text-align:center;margin-top:24px;">
             <button onclick="downloadReport()">📥 下載 HTML 分析報告</button>
             <button class="btn-secondary" onclick="resetAll()">🔄 清除並重新上傳</button>
         </div>
     </div>
-
     <script>
         // ==================== 全域狀態 ====================
         let analysisResult = null;
@@ -574,7 +604,6 @@
         const STAGE_BADGE_CLASSES = ['badge-power', 'badge-sec', 'badge-pei', 'badge-dxe', 'badge-bds', 'badge-tsl',
             'badge-rt', 'badge-al'
         ];
-
         // ==================== 階段檢測關鍵字（修正版） ====================
         const STAGE_PATTERNS = [
             // Power On - 上電階段：平台初始化、早期硬體探測
@@ -745,7 +774,6 @@
                 ]
             },
         ];
-
         function detectStage(line) {
             // 從後往前匹配，確保更精確的階段優先
             for (let i = STAGE_PATTERNS.length - 1; i >= 0; i--) {
@@ -755,12 +783,10 @@
             }
             return null;
         }
-
         // ==================== 文件處理 ====================
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const btnLoadSample = document.getElementById('btnLoadSample');
-
         uploadArea.addEventListener('dragover', (e) => { e.preventDefault();
             uploadArea.classList.add('drag-over'); });
         uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('drag-over'); });
@@ -779,7 +805,6 @@
                 fileInput.click();
             }
         });
-
         function processFile(file) {
             if (file.size > 50 * 1024 * 1024) {
                 alert('檔案過大，請上傳小於50MB的文件');
@@ -796,7 +821,6 @@
             reader.readAsText(file);
             uploadArea.querySelector('p').textContent = '正在分析: ' + file.name + ' ...';
         }
-
         // ==================== 日誌分析 ====================
         function analyzeLog(text) {
             const lines = text.split(/\r?\n/);
@@ -808,7 +832,6 @@
             let totalLines = lines.length;
             let stageLineCounts = {};
             STAGE_KEYS.forEach(k => { stageLineCounts[k] = 0; });
-
             // 統計計數器
             let peimCount = 0;
             let ppiInstallCount = 0;
@@ -817,7 +840,6 @@
             let protocolInstallCount = 0;
             let smmDriverCount = 0;
             let pciDeviceCount = 0;
-
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
                 if (!line.trim()) continue;
@@ -825,7 +847,6 @@
                 if (detected) currentStage = detected;
                 stageLineCounts[currentStage] = (stageLineCounts[currentStage] || 0) + 1;
                 stages[currentStage].lines.push({ index: i, text: line });
-
                 // 去重
                 const normalized = line.replace(/\d+/g, '#').replace(/0x[0-9A-Fa-f]+/g, '0x#').trim();
                 if (!stages[currentStage].uniqueSet.has(normalized)) {
@@ -835,7 +856,6 @@
                     const existing = stages[currentStage].uniqueLines.find(u => u.normalized === normalized);
                     if (existing) existing.count++;
                 }
-
                 // 關鍵事件統計
                 if (/Loading PEIM/i.test(line)) peimCount++;
                 if (/Install PPI:/i.test(line)) ppiInstallCount++;
@@ -844,7 +864,6 @@
                 if (/InstallProtocolInterface:/i.test(line)) protocolInstallCount++;
                 if (/SmmInstallProtocolInterface:/i.test(line)) smmDriverCount++;
                 if (/Probing PCI Device/i.test(line)) pciDeviceCount++;
-
                 // 里程碑事件
                 if (/PeiCore\.Entry/i.test(line))
                     stages['pei'].keyEvents.push({ index: i, text: '▶ PEI Core 入口', type: 'milestone' });
@@ -875,7 +894,6 @@
                 if (/ShutdownSuppression/i.test(line))
                     stages['al'].keyEvents.push({ index: i, text: '⚠️ ' + line.trim(), type: 'error' });
             }
-
             return {
                 totalLines,
                 stageLineCounts,
@@ -891,7 +909,6 @@
                 }
             };
         }
-
         // ==================== 渲染 ====================
         function renderAll(result) {
             document.getElementById('statsContainer').style.display = 'block';
@@ -899,7 +916,6 @@
             document.getElementById('enumContainer').style.display = 'block';
             document.getElementById('actionBar').style.display = 'block';
             document.getElementById('btnLoadSample').style.display = 'inline-block';
-
             renderStatsBar(result);
             renderSummaryGrid(result);
             renderTabs(result);
@@ -907,7 +923,6 @@
             document.getElementById('uploadArea').querySelector('p').textContent =
                 '拖拽 BIOS 日誌檔到此處，或點擊選擇檔（可重新上傳）';
         }
-
         function renderStatsBar(result) {
             const bar = document.getElementById('statsBar');
             let html = '';
@@ -921,7 +936,6 @@
             html +=
                 `<span class="stat-badge badge-total">總計: <strong>${result.totalLines.toLocaleString()}</strong> 行</span>`;
             bar.innerHTML = html;
-
             bar.querySelectorAll('.stat-badge[data-stage]').forEach(badge => {
                 badge.addEventListener('click', () => {
                     const stageKey = badge.dataset.stage;
@@ -931,7 +945,6 @@
                 });
             });
         }
-
         function renderSummaryGrid(result) {
             const grid = document.getElementById('summaryGrid');
             const s = result.stats;
@@ -949,68 +962,83 @@
                 `<div class="summary-card"><div class="num" style="color:${c.color}">${c.num.toLocaleString()}</div><div class="lbl">${c.lbl}</div></div>`
             ).join('');
         }
-
-        function renderTabs(result) {
+function renderTabs(result) {
             const tabNav = document.getElementById('tabNav');
             const tabContents = document.getElementById('tabContents');
             let navHtml = '';
             let contentsHtml = '';
 
-            STAGE_KEYS.forEach((k, i) => {
-                const stageData = result.stages[k];
-                const count = result.stageLineCounts[k] || 0;
+            // 內部高效轉義函式
+            const fastEscape = (str) => str.replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+
+            STAGE_KEYS.forEach((key, i) => {
+                const stageData = result.stages[key];
+                const count = result.stageLineCounts[key] || 0;
                 const uniqueCount = stageData ? stageData.uniqueLines.length : 0;
                 const activeClass = i === 0 ? ' active' : '';
-                navHtml +=
-                    `<button class="tab-btn${activeClass}" data-stage="${k}" onclick="switchTab('${k}')">${STAGE_NAMES[i]} <small>(${count.toLocaleString()}行 / 去重${uniqueCount.toLocaleString()})</small></button>`;
+                
+                navHtml += `<button class="tab-btn${activeClass}" data-stage="${key}" onclick="switchTab('${key}')">
+                    ${STAGE_NAMES[i]} <small>(${count.toLocaleString()}行 / 去重${uniqueCount.toLocaleString()})</small>
+                </button>`;
 
                 let contentHtml = '';
                 if (stageData && stageData.uniqueLines.length > 0) {
-                    // 關鍵事件區塊
+                    // 1. 關鍵事件區塊
                     if (stageData.keyEvents && stageData.keyEvents.length > 0) {
-                        contentHtml +=
-                            '<div class="key-events-box"><strong>🔑 關鍵事件:</strong><br>';
+                        contentHtml += '<div class="key-events-box" style="margin: 15px;"><strong>🔑 關鍵事件:</strong><br>';
                         stageData.keyEvents.forEach(ev => {
-                            const emoji = ev.type === 'milestone' ? '🔷' : ev.type === 'success' ? '✅' :
-                                '⚠️';
-                            contentHtml +=
-                                `  ${emoji} <span style="color:var(--accent);font-weight:600;">行#${ev.index+1}</span>: ${ev.text}<br>`;
+                            const emoji = ev.type === 'milestone' ? '🔷' : ev.type === 'success' ? '✅' : '⚠️';
+                            contentHtml += `  ${emoji} <span style="color:var(--accent);font-weight:600;">行#${ev.index+1}</span>: ${fastEscape(ev.text)}<br>`;
                         });
                         contentHtml += '</div>';
                     }
-                    // 去重後的日誌行
-                    const maxShow = Math.min(stageData.uniqueLines.length, 800);
+
+                    // 2. 建立日誌表格
+                    let tableHtml = '<table class="log-table"><tbody>';
+                    const maxShow = Math.min(stageData.uniqueLines.length, 1200); // 稍微調高上限
+                    
                     for (let j = 0; j < maxShow; j++) {
                         const u = stageData.uniqueLines[j];
-                        const countTag = u.count > 1 ?
-                            `<span class="count-tag">×${u.count}</span>` : '';
-                        const dupClass = u.count > 5 ? ' dup' : '';
-                        contentHtml +=
-                            `<div class="log-line${dupClass}"><span style="color:#999;">#${u.index+1}</span> ${escapeHTML(u.text)}${countTag}</div>`;
+                        const isDup = u.count > 1;
+                        const countTag = isDup ? `<span class="count-tag">×${u.count}</span>` : '';
+                        const dupClass = isDup ? ' dup' : ''; // 只要重複就套用 dup 樣式
+                        
+                        tableHtml += `
+                            <tr class="log-row ${dupClass}">
+                                <td class="log-ln">${u.index + 1}</td>
+                                <td class="log-txt">${fastEscape(u.text)}${countTag}</td>
+                            </tr>
+                        `;
                     }
+                    tableHtml += '</tbody></table>';
+                    contentHtml += tableHtml;
+
                     if (stageData.uniqueLines.length > maxShow) {
-                        contentHtml +=
-                            `<div style="color:var(--text-secondary);text-align:center;padding:10px;">... 還有 ${(stageData.uniqueLines.length - maxShow).toLocaleString()} 條去重後的日誌（已折疊）</div>`;
+                        contentHtml += `<div style="color:var(--text-secondary);text-align:center;padding:15px;background:#f8f9fa;border-top:1px solid #eee;">
+                            ... 還有 ${(stageData.uniqueLines.length - maxShow).toLocaleString()} 條獨特日誌（因瀏覽器性能已折疊）</div>`;
                     }
-                } else if (count > 0) {
-                    contentHtml =
-                        '<div style="color:var(--text-secondary);padding:20px;text-align:center;">該階段日誌較少，請查看原始日誌</div>';
                 } else {
-                    contentHtml =
-                        '<div style="color:var(--text-secondary);padding:20px;text-align:center;">此日誌未包含該階段內容</div>';
+                    contentHtml = `<div class="empty-state"><div class="icon">🔍</div><p>${count > 0 ? '該階段日誌過多或去重異常，請查看下載報告' : '此日誌未包含該階段內容'}</p></div>`;
                 }
-                contentsHtml +=
-                    `<div class="tab-content${activeClass}" id="tabContent_${k}"><div style="margin-bottom:8px;color:var(--text-secondary);font-size:0.8rem;">📋 ${STAGE_NAMES[i]} 階段 — 原始 ${count.toLocaleString()} 行 → 去重後 ${uniqueCount.toLocaleString()} 條獨特日誌</div>${contentHtml}</div>`;
+
+                contentsHtml += `<div class="tab-content${activeClass}" id="tabContent_${key}">
+                    <div style="padding:10px 15px; background:#fafafa; border-bottom:1px solid #eee; color:var(--text-secondary); font-size:0.8rem;">
+                        📋 ${STAGE_NAMES[i]} 階段 — 原始 ${count.toLocaleString()} 行 → 獨特日誌 ${uniqueCount.toLocaleString()} 條
+                    </div>
+                    ${contentHtml}
+                </div>`;
             });
 
             tabNav.innerHTML = navHtml;
             tabContents.innerHTML = contentsHtml;
 
-            // 預設啟動第一個有內容的tab
+            // 自動跳轉到第一個有內容的標籤
             const firstActiveStage = STAGE_KEYS.find(k => (result.stageLineCounts[k] || 0) > 0) || 'power_on';
             switchTab(firstActiveStage);
         }
-
+		
         function switchTab(stageKey) {
             document.querySelectorAll('#tabNav .tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('#tabContents .tab-content').forEach(c => c.classList.remove('active'));
@@ -1022,13 +1050,11 @@
             const statBadge = document.querySelector(`.stat-badge[data-stage="${stageKey}"]`);
             if (statBadge) statBadge.classList.add('active');
         }
-
         function escapeHTML(str) {
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
         }
-
         // ==================== Enum 對照表 ====================
         function renderEnumTables() {
             const enumTabNav = document.getElementById('enumTabNav');
@@ -1044,7 +1070,6 @@
                 { id: 'boot_modes', name: 'Boot Mode', content: buildEnumTable_BootModes() },
                 { id: 'reset_types', name: 'Reset Type', content: buildEnumTable_ResetTypes() },
             ];
-
             let navHtml = '';
             let contentsHtml = '';
             enumCategories.forEach((cat, i) => {
@@ -1057,7 +1082,6 @@
             enumTabNav.innerHTML = navHtml;
             enumTabContents.innerHTML = contentsHtml;
         }
-
         function switchEnumTab(id) {
             document.querySelectorAll('#enumTabNav .tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('#enumTabContents .tab-content').forEach(c => c.classList.remove('active'));
@@ -1066,7 +1090,6 @@
             if (btn) btn.classList.add('active');
             if (content) content.classList.add('active');
         }
-
         function buildEnumTable_Phases() {
             const data = [
                 ['Power On', '上電', '平台電源開啟，硬體初始化', 'G3 → S5，早期CPU/記憶體探測'],
@@ -1080,7 +1103,6 @@
             ];
             return buildTable(['階段', '全稱', '描述', '關鍵特徵'], data);
         }
-
         function buildEnumTable_ProgressCodes() {
             const data = [
                 ['V03020002', 'PEI', 'PEIM 開始載入 (PROGRESS CODE)'],
@@ -1105,7 +1127,6 @@
             ];
             return buildTable(['Code', '階段', '說明'], data);
         }
-
         function buildEnumTable_MemoryTypes() {
             const data = [
                 ['0x00 (EfiReservedMemoryType)', '保留記憶體', '不可使用'],
@@ -1126,7 +1147,6 @@
             ];
             return buildTable(['值', '名稱', '說明'], data);
         }
-
         function buildEnumTable_HobTypes() {
             const data = [
                 ['0x0001 (EFI_HOB_TYPE_HANDOFF)', 'PHIT HOB', '記憶體邊界資訊'],
@@ -1142,7 +1162,6 @@
             ];
             return buildTable(['值', '名稱', '說明'], data);
         }
-
         function buildEnumTable_PciPortTypes() {
             const data = [
                 ['0x0 (PCI_EXP_PCIE_ENDPOINT)', 'PCIe Endpoint', '標準PCIe端點設備'],
@@ -1158,7 +1177,6 @@
             ];
             return buildTable(['值', '名稱', '說明'], data);
         }
-
         function buildEnumTable_PpiGuids() {
             const data = [
                 ['8C8CE578-8A3D-4F1C...', 'EfiPeiSecurity2 PPI', 'PEI安全服務'],
@@ -1178,7 +1196,6 @@
             ];
             return buildTable(['GUID/名稱', 'PPI 名稱', '說明'], data);
         }
-
         function buildEnumTable_ProtocolGuids() {
             const data = [
                 ['EfiLoadedImage', 'Loaded Image Protocol', '鏡像載入資訊'],
@@ -1211,7 +1228,6 @@
             ];
             return buildTable(['GUID/名稱', 'Protocol 名稱', '說明'], data);
         }
-
         function buildEnumTable_BootModes() {
             const data = [
                 ['0x00 (BOOT_WITH_FULL_CONFIGURATION)', '完整配置啟動', '正常完整開機'],
@@ -1228,7 +1244,6 @@
             ];
             return buildTable(['值', '名稱', '說明'], data);
         }
-
         function buildEnumTable_ResetTypes() {
             const data = [
                 ['EfiResetCold', '冷開機', '完全硬體重置，斷電重啟'],
@@ -1238,7 +1253,6 @@
             ];
             return buildTable(['類型', '名稱', '說明'], data);
         }
-
         function buildTable(headers, rows) {
             let html = '<table class="enum-table"><thead><tr>';
             headers.forEach(h => html += `<th>${h}</th>`);
@@ -1251,7 +1265,6 @@
             html += '</tbody></table>';
             return html;
         }
-
         // ==================== 下載報告 ====================
         function downloadReport() {
             if (!analysisResult) { alert('請先上傳並分析日誌檔');
@@ -1268,62 +1281,60 @@
             URL.revokeObjectURL(url);
             showToast('📥 報告下載中...');
         }
-
+		
         function generateReportHTML() {
             const r = analysisResult;
-            let body = '';
+            let sections = '';
+            
+            // 建立簡易轉義函式
+            const esc = (str) => str.replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+
             STAGE_KEYS.forEach((k, i) => {
                 const sd = r.stages[k];
                 const count = r.stageLineCounts[k] || 0;
                 const uniqueCount = sd ? sd.uniqueLines.length : 0;
-                const borderColor = STAGE_COLORS[i];
-                body +=
-                    `<h2 style="color:${borderColor};border-bottom:2px solid ${borderColor};padding-bottom:6px;">${STAGE_NAMES[i]} (${count.toLocaleString()} 行 / 去重 ${uniqueCount.toLocaleString()})</h2>`;
+                const color = STAGE_COLORS[i];
+                
+                let eventsHtml = '';
                 if (sd && sd.keyEvents && sd.keyEvents.length > 0) {
-                    body +=
-                        '<div style="background:#fffdf5;border-left:3px solid #b8860b;padding:10px;border-radius:6px;margin:8px 0;"><strong>🔑 關鍵事件:</strong><br>';
+                    eventsHtml = '<div style="background:#fffdf5;border-left:4px solid #b8860b;padding:10px;margin:10px 0;font-size:13px;"><strong>🔑 關鍵事件:</strong><br>';
                     sd.keyEvents.forEach(ev => {
-                        body +=
-                            `&nbsp;&nbsp;${ev.type==='milestone'?'🔷':ev.type==='success'?'✅':'⚠️'} 行#${ev.index+1}: ${ev.text}<br>`;
+                        eventsHtml += `&nbsp;&nbsp;${ev.type==='milestone'?'🔷':ev.type==='success'?'✅':'⚠️'} 行#${ev.index+1}: ${esc(ev.text)}<br>`;
                     });
-                    body += '</div>';
+                    eventsHtml += '</div>';
                 }
+
+                let rowsHtml = '';
                 if (sd && sd.uniqueLines.length > 0) {
-                    const maxShow = Math.min(sd.uniqueLines.length, 600);
-                    body +=
-                        '<pre style="font-size:0.78rem;line-height:1.4;background:#fafafa;padding:10px;border-radius:4px;max-height:400px;overflow-y:auto;border:1px solid #e0e0e0;">';
-                    for (let j = 0; j < maxShow; j++) {
+                    const max = Math.min(sd.uniqueLines.length, 2000); // 報告可以看多一點
+                    rowsHtml = '<table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:12px;border:1px solid #eee;">';
+                    for (let j = 0; j < max; j++) {
                         const u = sd.uniqueLines[j];
-                        body +=
-                            `[#${u.index+1}]${u.count>1?' (×'+u.count+')':''} ${u.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}\n`;
+                        rowsHtml += `
+                            <tr style="border-bottom:1px solid #f9f9f9; ${u.count > 1 ? 'color:#999;font-style:italic;' : ''}">
+                                <td style="width:60px;text-align:right;padding:2px 10px;background:#f5f5f5;color:#aaa;user-select:none;border-right:1px solid #eee;">${u.index+1}</td>
+                                <td style="padding:2px 10px;word-break:break-all;">${esc(u.text)} ${u.count > 1 ? '<span style="background:#eee;padding:0 4px;border-radius:4px;">x'+u.count+'</span>' : ''}</td>
+                            </tr>`;
                     }
-                    if (sd.uniqueLines.length > maxShow) body +=
-                        `\n... 還有 ${sd.uniqueLines.length-maxShow} 條去重日誌`;
-                    body += '</pre>';
-                } else if (count === 0) {
-                    body += '<p style="color:#999;">該階段無日誌內容</p>';
+                    rowsHtml += '</table>';
+                    if (sd.uniqueLines.length > max) rowsHtml += `<p style="color:#999;text-align:center;">... 還有 ${sd.uniqueLines.length - max} 條已省略</p>`;
                 }
+
+                sections += `
+                    <h2 style="color:${color};border-bottom:2px solid ${color};padding-bottom:5px;margin-top:30px;">${STAGE_NAMES[i]} (${count}行 / 去重${uniqueCount})</h2>
+                    ${eventsHtml}
+                    ${rowsHtml || '<p style="color:#ccc;">無內容</p>'}
+                `;
             });
-            // Enum tables section
-            let enumBody = '<h2>📚 Enum 對照表</h2>';
-            enumBody += '<h3>UEFI PI 啟動階段</h3>' + buildEnumTable_Phases();
-            enumBody += '<h3>PROGRESS CODE</h3>' + buildEnumTable_ProgressCodes();
-            enumBody += '<h3>EfiMemoryType</h3>' + buildEnumTable_MemoryTypes();
-            enumBody += '<h3>HOB 類型</h3>' + buildEnumTable_HobTypes();
-            enumBody += '<h3>PCIe Port 類型</h3>' + buildEnumTable_PciPortTypes();
-            enumBody += '<h3>常見 PPI GUID</h3>' + buildEnumTable_PpiGuids();
-            enumBody += '<h3>常見 Protocol GUID</h3>' + buildEnumTable_ProtocolGuids();
-            enumBody += '<h3>Boot Mode</h3>' + buildEnumTable_BootModes();
-            enumBody += '<h3>Reset Type</h3>' + buildEnumTable_ResetTypes();
 
-            return `<!DOCTYPE html>
-        <html lang="zh-TW">
-        <head><meta charset="UTF-8"><title>BIOS Code Flow 分析報告</title>
-        <style>body{font-family:'Consolas','Courier New',monospace;max-width:1400px;margin:0 auto;padding:20px;background:#fff;color:#333;line-height:1.6}h1{color:#1a73e8}h2{margin-top:24px}pre{white-space:pre-wrap;word-break:break-all}table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid #ddd;padding:6px 10px;text-align:left}th{background:#f1f3f4;color:#333}</style></head>
-        <body><h1>🔧 BIOS/UEFI Code Flow 分析報告</h1><p>總行數: ${r.totalLines.toLocaleString()} | 生成時間: ${new Date().toISOString()}</p>
-        <hr>${body}<hr>${enumBody}<hr><p style="text-align:center;color:#999;">由 BIOS Log Analyzer 生成</p></body></html>`;
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>BIOS 分析報告</title></head>
+                    <body style="max-width:1200px;margin:0 auto;padding:20px;font-family:sans-serif;color:#333;">
+                    <h1>🔧 BIOS/UEFI Code Flow 分析報告</h1><p>總行數: ${r.totalLines} | 生成時間: ${new Date().toLocaleString()}</p>
+                    <hr>${sections}<hr><p style="text-align:center;color:#999;">Generated by BIOS Log Analyzer</p></body></html>`;
         }
-
+		
         function resetAll() {
             analysisResult = null;
             document.getElementById('statsContainer').style.display = 'none';
@@ -1341,7 +1352,6 @@
             fileInput.value = '';
             showToast('🔄 已清除，請上傳新的日誌檔');
         }
-
         function showToast(msg) {
             const existing = document.querySelector('.toast');
             if (existing) existing.remove();
@@ -1351,7 +1361,6 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 2600);
         }
-
         // ==================== 初始化 ====================
         document.getElementById('btnLoadSample').addEventListener('click', function() {
             if (analysisResult) {
@@ -1361,7 +1370,6 @@
             }
             fileInput.click();
         });
-
         // 鍵盤快速鍵
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'o') {
@@ -1381,7 +1389,6 @@
                 }
             }
         });
-
         console.log('🔧 BIOS/UEFI Boot Log Analyzer 已就緒 (白底版)');
         console.log('支持快速鍵: Ctrl+O 打開文件 | Ctrl+1~8 切換階段標籤 | Ctrl+S 下載報告');
         console.log('支持拖拽上傳 .log/.txt 文件');
