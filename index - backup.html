@@ -19,7 +19,6 @@
             --accent6: #0d6efd;
             --accent7: #157347;
             --accent8: #d93025;
-            --tag-power: #d93025;
             --tag-sec: #c0392b;
             --tag-pei: #b8860b;
             --tag-dxe: #1a73e8;
@@ -27,12 +26,31 @@
             --tag-tsl: #6f42c1;
             --tag-rt: #0d6efd;
             --tag-al: #e67e22;
+            --tag-power: #d93025;
             --highlight-row: #e8f0fe;
             --highlight-row2: #fef9e7;
             --code-bg: #f5f5f5;
             --toast-bg: #198754;
             --upload-bg: #fafafa;
             --upload-border: #dee2e6;
+            --badge-bg-power: #fce8e6;
+            --badge-bg-sec: #fce8e6;
+            --badge-bg-pei: #fef7e0;
+            --badge-bg-dxe: #e8f0fe;
+            --badge-bg-bds: #e6f4ea;
+            --badge-bg-tsl: #f3e8fd;
+            --badge-bg-rt: #e8f0fe;
+            --badge-bg-al: #fef0e0;
+            --badge-bg-total: #f1f3f4;
+            --badge-text-power: #c5221f;
+            --badge-text-sec: #c5221f;
+            --badge-text-pei: #8b6914;
+            --badge-text-dxe: #1a5dc4;
+            --badge-text-bds: #137333;
+            --badge-text-tsl: #5b2ea3;
+            --badge-text-rt: #0842a0;
+            --badge-text-al: #c0520a;
+            --badge-text-total: #5f6368;
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
             --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -162,48 +180,48 @@
             transform: translateY(-2px);
         }
         .badge-power {
-            background: #fce8e6;
-            color: #c5221f;
+            background: var(--badge-bg-power);
+            color: var(--badge-text-power);
             border-color: #f5c6cb;
         }
         .badge-sec {
-            background: #fce8e6;
-            color: #c5221f;
+            background: var(--badge-bg-sec);
+            color: var(--badge-text-sec);
             border-color: #f5c6cb;
         }
         .badge-pei {
-            background: #fef7e0;
-            color: #8b6914;
+            background: var(--badge-bg-pei);
+            color: var(--badge-text-pei);
             border-color: #f0d78c;
         }
         .badge-dxe {
-            background: #e8f0fe;
-            color: #1a5dc4;
+            background: var(--badge-bg-dxe);
+            color: var(--badge-text-dxe);
             border-color: #b6d4fe;
         }
         .badge-bds {
-            background: #e6f4ea;
-            color: #137333;
+            background: var(--badge-bg-bds);
+            color: var(--badge-text-bds);
             border-color: #a3d7b5;
         }
         .badge-tsl {
-            background: #f3e8fd;
-            color: #5b2ea3;
+            background: var(--badge-bg-tsl);
+            color: var(--badge-text-tsl);
             border-color: #d4bff9;
         }
         .badge-rt {
-            background: #e8f0fe;
-            color: #0842a0;
+            background: var(--badge-bg-rt);
+            color: var(--badge-text-rt);
             border-color: #b6d4fe;
         }
         .badge-al {
-            background: #fef0e0;
-            color: #c0520a;
+            background: var(--badge-bg-al);
+            color: var(--badge-text-al);
             border-color: #f8c994;
         }
         .badge-total {
-            background: #f1f3f4;
-            color: #5f6368;
+            background: var(--badge-bg-total);
+            color: var(--badge-text-total);
             border-color: #d0d5dd;
         }
         .tab-nav {
@@ -242,13 +260,14 @@
             background: #fff;
             box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
         }
+/* --- 修改後的日誌顯示區域樣式 (表格佈局) --- */
         .tab-content {
             display: none;
             background: #fff;
             border: 1px solid var(--border);
             border-top: none;
             border-radius: 0 0 var(--radius-md) var(--radius-md);
-            padding: 0;
+            padding: 0; /* 移除 padding 讓表格貼邊 */
             max-height: 65vh;
             overflow-y: auto;
             font-family: 'Consolas', 'Courier New', monospace;
@@ -257,14 +276,15 @@
         .log-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
+            table-layout: fixed; /* 固定佈局確保寬度穩定 */
         }
         .log-row {
             border-bottom: 1px solid #f0f0f0;
         }
         .log-row:hover {
             background: var(--highlight-row);
-        }
+        }		
+/* 行號欄位：鎖定不可選取 */
         .log-ln {
             width: 70px;
             min-width: 70px;
@@ -274,11 +294,12 @@
             background: #f8f9fa;
             border-right: 2px solid #eee;
             font-size: 0.75rem;
-            user-select: none;
+            user-select: none; /* 防止選取複製 */
             -webkit-user-select: none;
             vertical-align: top;
             white-space: nowrap;
         }
+/* 文本內容欄位 */
         .log-txt {
             padding: 2px 15px;
             font-size: 0.82rem;
@@ -293,6 +314,7 @@
             font-style: italic;
             opacity: 0.75;
         }
+/* 讓重複次數標籤也不會被選取 */
         .count-tag {
             display: inline-block;
             background: #e9ecef;
@@ -301,12 +323,24 @@
             padding: 0px 6px;
             border-radius: 10px;
             margin-left: 8px;
-            user-select: none;
+            user-select: none; 
             border: 1px solid #dee2e6;
             font-weight: 600;
         }
         .tab-content.active {
             display: block;
+        }
+        .log-line .count-tag {
+            display: inline-block;
+            background: #e9ecef;
+            color: #495057;
+            font-size: 0.7rem;
+            padding: 1px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+            vertical-align: middle;
+            font-weight: 600;
+            border: 1px solid #dee2e6;
         }
         .enum-table-wrap {
             overflow-x: auto;
@@ -373,6 +407,50 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             margin-top: 4px;
+        }
+        .collapsible {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--accent);
+            padding: 6px 0;
+            user-select: none;
+        }
+        .collapsible::before {
+            content: '▸ ';
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        .collapsible.open::before {
+            transform: rotate(90deg);
+        }
+        .collapsible-content {
+            display: none;
+            padding-left: 16px;
+            border-left: 2px solid var(--border);
+            margin: 4px 0 8px 0;
+        }
+        .collapsible-content.open {
+            display: block;
+        }
+        .highlight-keyword {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .highlight-warn {
+            color: var(--accent3);
+        }
+        .highlight-error {
+            color: var(--accent4);
+        }
+        .highlight-success {
+            color: var(--accent2);
+        }
+        .timeline-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
         }
         .key-events-box {
             background: #fffdf5;
@@ -483,6 +561,7 @@
             <h1>🔧 BIOS/UEFI Boot Log Analyzer</h1>
             <p class="subtitle">依照 <strong>Power On → SEC → PEI → DXE → BDS → TSL → RT → AL</strong> 階段分析 • 去重展示 • 附 Enum 對照表</p>
         </header>
+        <!-- 上傳區域 -->
         <div class="upload-section" id="uploadArea">
             <div class="upload-icon">📁</div>
             <p>拖拽 BIOS 日誌檔到此處，或點擊選擇檔</p>
@@ -491,20 +570,24 @@
             <button class="btn btn-secondary" id="btnLoadSample" style="display:none;">📋 載入分析結果</button>
             <p style="font-size:0.8rem;color:var(--text-secondary)">支持 .log / .txt 格式 • 最大 50MB</p>
         </div>
+        <!-- 統計概覽 -->
         <div id="statsContainer" style="display:none;">
             <h3 style="margin-bottom:10px;">📊 啟動階段概覽</h3>
             <div class="stats-bar" id="statsBar"></div>
             <div class="summary-grid" id="summaryGrid"></div>
         </div>
+        <!-- 階段標籤頁 -->
         <div id="tabNavContainer" style="display:none;">
             <div class="tab-nav" id="tabNav"></div>
             <div id="tabContents"></div>
         </div>
+        <!-- Enum 對照表 -->
         <div id="enumContainer" style="display:none;margin-top:24px;">
             <h3 style="margin-bottom:10px;">📚 常見 Enum 數值對照表</h3>
             <div class="tab-nav" id="enumTabNav"></div>
             <div id="enumTabContents"></div>
         </div>
+        <!-- 操作按鈕 -->
         <div id="actionBar" style="display:none;text-align:center;margin-top:24px;">
             <button onclick="downloadReport()">📥 下載 HTML 分析報告</button>
             <button class="btn-secondary" onclick="resetAll()">🔄 清除並重新上傳</button>
@@ -521,10 +604,9 @@
         const STAGE_BADGE_CLASSES = ['badge-power', 'badge-sec', 'badge-pei', 'badge-dxe', 'badge-bds', 'badge-tsl',
             'badge-rt', 'badge-al'
         ];
-
-        // ==================== 階段檢測關鍵字（增強版 - 基於 teraterm_S3M.log 分析） ====================
+        // ==================== 階段檢測關鍵字（修正版） ====================
         const STAGE_PATTERNS = [
-            // Power On - 上電階段：平台初始化、早期硬體探測、系統資訊輸出
+            // Power On - 上電階段：平台初始化、早期硬體探測
             {
                 stage: 'power_on',
                 patterns: [
@@ -537,27 +619,10 @@
                     /PlatformInitializeDimmData/i,
                     /\[PEI System Information\]/i,
                     /Total Memory:/i,
-                    /Memory Speed:/i,
-                    /Platform Name:/i,
-                    /System BIOS Version:/i,
-                    /Core Version:/i,
-                    /Intel RC Version:/i,
-                    /BIOS ID:/i,
-                    /Processor Information:/i,
-                    /No\. of Processors:/i,
-                    /Core Count:/i,
-                    /System Information:/i,
-                    /OutputBiosVersion/i,
-                    /OutputCpuInformation/i,
-                    /OutputDimmInformation/i,
-                    /InitializeDimmData/i,
-                    /Platform Type:/i,
-                    /Board ID/i,
-                    /Board Rev/i,
-                    /Set Platform Type/i,
+                    /Memory Speed:/i
                 ]
             },
-            // SEC - Security Phase：CPU初始化、CAR設置、Temp RAM、Security相關
+            // SEC - Security Phase：CPU初始化、CAR設置、Temp RAM
             {
                 stage: 'sec',
                 patterns: [
@@ -570,27 +635,14 @@
                     /TempRAM Base/i,
                     /StackBase/i,
                     /StackSize/i,
-                    /PeiCoreEntryPoint:/i,
-                    /SecPlatformInformation/i,
-                    /SecGetPerformance/i,
-                    /FPDT: SEC Performance/i,
-                    /SecPlatformDisableTemporaryMemory/i,
-                    /RepublishSecPpi/i,
-                    /EfiSecPlatformInformation/i,
-                    /EfiTemporaryRamDone/i,
-                    /Temp Stack\s*:/i,
-                    /Temp Heap\s*:/i,
-                    /Total temporary memory:/i,
-                    /temporary memory stack ever used:/i,
-                    /temporary memory heap used for HobList:/i,
+                    /PeiCoreEntryPoint:/i
                 ]
             },
-            // PEI - Pre-EFI Initialization：PEIM載入、PPI服務、記憶體訓練(MRC)
+            // PEI - Pre-EFI Initialization：PEIM載入、PPI服務、記憶體訓練
             {
                 stage: 'pei',
                 patterns: [
                     /PeiCore\.Entry/i,
-                    /PeiCore\.Mem\.Entry/i,
                     /Loading PEIM/i,
                     /Install PPI:/i,
                     /Register PPI Notify:/i,
@@ -599,145 +651,45 @@
                     /PROGRESS CODE: V[0-9A-F]/i,
                     /Install Efi Memory/i,
                     /Temp Stack/i,
+                    /PeiCore\.Mem\.Entry/i,
                     /DxeIpl Entry/i,
                     /Install PPI:.*EfiDxeIpl/i,
-                    /START_MRC_RUN/i,
-                    /STOP_MRC_RUN/i,
-                    /Total MRC time/i,
                     /MRC/i,
                     /Memory.*Initial/i,
-                    /Memory behind processor/i,
-                    /Detect DIMM Configuration/i,
-                    /Gather SPD Data/i,
-                    /Socket DIMM Information/i,
-                    /DDR Training/i,
-                    /Pre-Training Initialization/i,
-                    /Post-Training Initialization/i,
-                    /Initialize Memory Map/i,
                     /\[PEI System/i,
                     /MemoryRanges/i,
                     /MTRR Settings/i,
                     /FspData:/i,
                     /SAL CALLTABLE/i,
                     /KTI Init/i,
-                    /KTIRC Exit/i,
                     /SsaLoader/i,
-                    /RC Version:/i,
-                    /Configure IIO early link/i,
-                    /Initialize CXL/i,
-                    /Configure Mesh Mode/i,
-                    /Pipe Init starting/i,
-                    /CpuInit Start/i,
-                    /UncoreFrequencyInit/i,
-                    /ProgramProcessorFlexRatio/i,
-                    /SetActiveCoresAndLpEnableDisable/i,
-                    /CPU Feature Early Config/i,
-                    /OOBMSM PreMem Configure/i,
-                    /Provisioning SoftStrap/i,
-                    /Pipe Exit starting/i,
-                    /Enhanced Warning Log/i,
-                    /Checking for Reset Requests/i,
-                    /Continue with system BIOS POST/i,
+                    /RC Version:/i
                 ]
             },
-            // DXE - Driver Execution Environment：驅動載入、Protocol服務、PCI枚舉、SMM
+            // DXE - Driver Execution Environment：驅動載入、Protocol服務、PCI枚舉
             {
                 stage: 'dxe',
                 patterns: [
                     /DXE-Core\.Entry/i,
-                    /DxeMain: MemoryBaseAddress/i,
-                    /HOBLIST address in DXE/i,
                     /InstallProtocolInterface:/i,
                     /Loading driver/i,
                     /ProtectUefiImageCommon/i,
                     /SMM IPL/i,
                     /PiSmmCoreImageBase/i,
                     /SmmInstallProtocolInterface:/i,
-                    /SMM\.StatusCodeSmm/i,
-                    /SMM\.SiliconDataInitSmm/i,
-                    /SMM\.CpuIo2Smm/i,
-                    /SMM\.SpiSmm/i,
-                    /SMM\.SmbusSmm/i,
-                    /SMM\.PiSmmCpuDxeSmm/i,
-                    /SMM IPL opened SMRAM window/i,
-                    /SMM IPL found SMRAM window/i,
-                    /SMM IPL loading SMM Core/i,
                     /PciHostBrg: Initializing/i,
                     /PciBus:.*STARTING/i,
                     /DxeReportStatusCode.*0x68/i,
-                    /DxeReportStatusCode.*0x70/i,
                     /HB: Got HostBridge Info/i,
                     /Memory Allocation 0x/i,
                     /FV Hob\s/i,
                     /FV2 Hob/i,
                     /FV3 Hob/i,
                     /SetUefiImageMemoryAttributes/i,
-                    /PciBus:.*STARTING\.\.\./i,
-                    /GCD: AddMemSpace/i,
-                    /GCD: AllocMemSpace/i,
-                    /GCD: AddI\/OSpace/i,
-                    /GCD: AllocI\/OSpace/i,
-                    /HB: Convert All Unallocated Memory to MMIO/i,
-                    /InstallProtocolInterface:.*EfiPciHostBridgeResourceAllocation/i,
-                    /InstallProtocolInterface:.*EfiPciRootBridgeIo/i,
-                    /RootBrgInit\(\)/i,
-                    /PciRb#\d+: Enumerating Buses/i,
-                    /Probing PCI Device/i,
-                    /Discovered PCI Device/i,
-                    /PciE: Collecting CAPs/i,
-                    /PciE2:/i,
-                    /PciE3:/i,
-                    /PciE4:/i,
-                    /PciE5:/i,
-                    /PciBus: InitDevice Chain/i,
-                    /HbCspSetBusNumbers/i,
-                    /PciRb#\d+: Assigning Buses/i,
-                    /\[PCI\] EfiPciHostBridge/i,
-                    /PciPlt: PciNotify/i,
-                    /ResAlloc: PciNotify/i,
-                    /PciBus: ConvertResources/i,
-                    /PciBus: CalculateBrgResources/i,
-                    /PciBus: OptimizeBrgRes/i,
-                    /ApplyRD QWD:/i,
-                    /CreateRD QWD:/i,
-                    /\[PCI\] Platform bus assigned/i,
-                    /\[PCI\] No Bus shortage/i,
-                    /SYSTEM BOOTED SUCCESSFULLY WITHOUT ANY OOR CONDITION/i,
-                    /InstallProtocolInterface:.*EfiPciEnumerationComplete/i,
-                    /PciBus: Installing PCI IO/i,
-                    /AcpiPlatform:/i,
-                    /\[ACPI\]/i,
-                    /DMAR Table/i,
-                    /CpuDxe: 5-Level Paging/i,
-                    /AP Loop Mode/i,
-                    /Detect CPU count:/i,
-                    /InstallProtocolInterface:.*EfiMpService/i,
-                    /Microcode revision/i,
-                    /CPU\[\d+\]: Microcode revision/i,
-                    /GetMicrocodePatchInfoFromHob/i,
-                    /IblInitEntryPointDxe/i,
-                    /Install PCH NVS protocol/i,
-                    /\[GPIOV2\]\[DXE\]/i,
-                    /GSIO: Starting SIO Initialization/i,
-                    /SioInit:/i,
-                    /\[SMBIOS\]/i,
-                    /SmbiosPiAddStructure/i,
-                    /InstallProtocolInterface:.*EfiSmbios/i,
-                    /\[IIO\]/i,
-                    /IioTraceHubInitialize/i,
-                    /IioSpkSocketInitialize/i,
-                    /\[CXL\]/i,
-                    /CxlInitPeiEntry/i,
-                    /CEDT ACPI Table/i,
-                    /CXL Host Bridge Structure/i,
-                    /CXL Fixed Memory Window Structure/i,
-                    /CxlOnPciEnumerationStart/i,
-                    /IioInit Secure the Platform/i,
-                    /IioOnPciEnumCompleteCallback/i,
-                    /IblOnPciEnumCompleteCommon/i,
+                    /PciBus:.*STARTING\.\.\./i
                 ]
             },
-            // BDS - Boot Device Selection：啟動設備選擇、Console初始化、PCI Bus Start
+            // BDS - Boot Device Selection：啟動設備選擇、Console初始化
             {
                 stage: 'bds',
                 patterns: [
@@ -746,9 +698,6 @@
                     /DxeReportStatusCode.*0x90/i,
                     /DxeReportStatusCode.*0x91/i,
                     /DxeReportStatusCode.*0x92/i,
-                    /DxeReportStatusCode.*0x94/i,
-                    /DxeReportStatusCode.*0x95/i,
-                    /DxeReportStatusCode.*0x96/i,
                     /OptRomPolicy/i,
                     /AmiBdsConnectDrivers/i,
                     /Console.*connect/i,
@@ -757,33 +706,7 @@
                     /PCI Bus Initialization/i,
                     /PciRootBrg: Host/i,
                     /Console redirection/i,
-                    /BDS execution policy/i,
-                    /UpdatePcieSetupDatatoDoNotTouch/i,
-                    /PciBus: Updating Default Setup Data/i,
-                    /OptionRomPolicyEntryPoint/i,
-                    /\[PCI\] Platform Pre-Initialization/i,
-                    /\[PCI\] Platform Mid-Initialization/i,
-                    /\[PCI\] Platform Post-Initialization/i,
-                    /\[PCI\] Initialize RCiEP/i,
-                    /\[PCI\] Initialize host bridge/i,
-                    /\[PCI\] Initialize root port/i,
-                    /\[PCI\] EfiPciHostBridgeBeginEnumeration/i,
-                    /\[PCI\] EfiPciHostBridgeBeginBusAllocation/i,
-                    /\[PCI\] EfiPciHostBridgeEndBusAllocation/i,
-                    /\[PCI\] EfiPciHostBridgeBeginResourceAllocation/i,
-                    /\[PCI\] EfiPciHostBridgeAllocateResources/i,
-                    /\[PCI\] EfiPciHostBridgeSetResources/i,
-                    /\[PCI\] EfiPciHostBridgeEndResourceAllocation/i,
-                    /\[PCI\] EfiPciHostBridgeEndEnumeration/i,
-                    /PciBus: Entering StartPciDevices/i,
-                    /PciBus: StartPciDevices Called/i,
-                    /PciBus: StartPciChildDevice/i,
-                    /Class code is Network/i,
-                    /Oprom policy is UEFI/i,
-                    /SetOptionRomPolicy/i,
-                    /IioOnPciEnumCompleteCallback/i,
-                    /IblOnPciEnumCompleteCommon/i,
-                    /\[GPIOV2\] \[ConflictCheck\]/i,
+                    /BDS execution policy/i
                 ]
             },
             // TSL - Transient System Load：OS Boot Loader過渡階段
@@ -803,16 +726,7 @@
                     /grub/i,
                     /Linux.*EFI/i,
                     /SmbiosIFWI/i,
-                    /Filter Smbios Table/i,
-                    /ReadyToBootEvent/i,
-                    /OnReadyToBoot/i,
-                    /AfterEndOfDxe/i,
-                    /PrmLoaderEndOfDxe/i,
-                    /SmmReadyToBoot/i,
-                    /DxeReportStatusCode.*0x97/i,
-                    /DxeReportStatusCode.*0x99/i,
-                    /DxeReportStatusCode.*0x9A/i,
-                    /DxeReportStatusCode.*0x9B/i,
+                    /Filter Smbios Table/i
                 ]
             },
             // RT - Runtime：OS接管、ExitBootServices、Runtime Services
@@ -823,14 +737,16 @@
                     /Runtime.*Entry/i,
                     /VirtualAddressChange/i,
                     /SetVirtualAddressMap/i,
+                    /AfterEndOfDxe/i,
+                    /ReadyToBootEvent/i,
                     /FPDT:.*ExitBootServices/i,
                     /CpuDxe:.*Paging/i,
                     /VTD.*Disabled/i,
                     /IioSecureOnExitBootServices/i,
                     /AcpiOnExitBootServicesCallback/i,
-                    /EfiRuntimeArch/i,
-                    /InstallProtocolInterface:.*EfiRuntimeArch/i,
-                    /ConvertPages: failed to find range/i,
+                    /SmmReadyToBoot/i,
+                    /OnReadyToBoot/i,
+                    /PrmLoaderEndOfDxe/i
                 ]
             },
             // AL - Afterlife/Shutdown：關機/重啟
@@ -854,26 +770,11 @@
                     /Configure IIO early link/i,
                     /IioEarlyLinkInit/i,
                     /Mca.*ShutdownSuppression/i,
-                    /ConfigureShutdownSuppression/i,
+                    /ConfigureShutdownSuppression/i
                 ]
             },
         ];
-
         function detectStage(line) {
-            // 先檢查明確的 Progress Code / Status Code
-            if (/DxeReportStatusCode.*0x90/i.test(line)) return 'bds';
-            if (/DxeReportStatusCode.*0x91/i.test(line)) return 'bds';
-            if (/DxeReportStatusCode.*0x92/i.test(line)) return 'bds';
-            if (/DxeReportStatusCode.*0x94/i.test(line)) return 'bds';
-            if (/DxeReportStatusCode.*0x95/i.test(line)) return 'bds';
-            if (/DxeReportStatusCode.*0x96/i.test(line)) return 'bds';
-            if (/DxeReportStatusCode.*0x97/i.test(line)) return 'tsl';
-            if (/DxeReportStatusCode.*0x99/i.test(line)) return 'tsl';
-            if (/DxeReportStatusCode.*0x9A/i.test(line)) return 'tsl';
-            if (/DxeReportStatusCode.*0x9B/i.test(line)) return 'tsl';
-            if (/DxeReportStatusCode.*0x68/i.test(line)) return 'dxe';
-            if (/DxeReportStatusCode.*0x70/i.test(line)) return 'dxe';
-            if (/PROGRESS CODE: V03041000/i.test(line)) return 'dxe';
             // 從後往前匹配，確保更精確的階段優先
             for (let i = STAGE_PATTERNS.length - 1; i >= 0; i--) {
                 for (const pat of STAGE_PATTERNS[i].patterns) {
@@ -882,7 +783,6 @@
             }
             return null;
         }
-
         // ==================== 文件處理 ====================
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -905,7 +805,6 @@
                 fileInput.click();
             }
         });
-
         function processFile(file) {
             if (file.size > 50 * 1024 * 1024) {
                 alert('檔案過大，請上傳小於50MB的文件');
@@ -922,7 +821,6 @@
             reader.readAsText(file);
             uploadArea.querySelector('p').textContent = '正在分析: ' + file.name + ' ...';
         }
-
         // ==================== 日誌分析 ====================
         function analyzeLog(text) {
             const lines = text.split(/\r?\n/);
@@ -934,6 +832,7 @@
             let totalLines = lines.length;
             let stageLineCounts = {};
             STAGE_KEYS.forEach(k => { stageLineCounts[k] = 0; });
+            // 統計計數器
             let peimCount = 0;
             let ppiInstallCount = 0;
             let ppiNotifyCount = 0;
@@ -948,6 +847,7 @@
                 if (detected) currentStage = detected;
                 stageLineCounts[currentStage] = (stageLineCounts[currentStage] || 0) + 1;
                 stages[currentStage].lines.push({ index: i, text: line });
+                // 去重
                 const normalized = line.replace(/\d+/g, '#').replace(/0x[0-9A-Fa-f]+/g, '0x#').trim();
                 if (!stages[currentStage].uniqueSet.has(normalized)) {
                     stages[currentStage].uniqueSet.add(normalized);
@@ -956,6 +856,7 @@
                     const existing = stages[currentStage].uniqueLines.find(u => u.normalized === normalized);
                     if (existing) existing.count++;
                 }
+                // 關鍵事件統計
                 if (/Loading PEIM/i.test(line)) peimCount++;
                 if (/Install PPI:/i.test(line)) ppiInstallCount++;
                 if (/Register PPI Notify:/i.test(line) || /Notify: PPI:/i.test(line)) ppiNotifyCount++;
@@ -963,11 +864,9 @@
                 if (/InstallProtocolInterface:/i.test(line)) protocolInstallCount++;
                 if (/SmmInstallProtocolInterface:/i.test(line)) smmDriverCount++;
                 if (/Probing PCI Device/i.test(line)) pciDeviceCount++;
+                // 里程碑事件
                 if (/PeiCore\.Entry/i.test(line))
                     stages['pei'].keyEvents.push({ index: i, text: '▶ PEI Core 入口', type: 'milestone' });
-                if (/PeiCore\.Mem\.Entry/i.test(line))
-                    stages['pei'].keyEvents.push({ index: i, text: '▶ PEI Core 記憶體模式入口',
-                type: 'milestone' });
                 if (/DXE-Core\.Entry/i.test(line))
                     stages['dxe'].keyEvents.push({ index: i, text: '▶ DXE Core 入口', type: 'milestone' });
                 if (/BDS Started/i.test(line))
@@ -975,39 +874,25 @@
                 if (/DxeReportStatusCode.*0x90/i.test(line) && !stages['bds'].keyEvents.some(e => e.text.includes(
                         'BDS')))
                     stages['bds'].keyEvents.push({ index: i, text: '▶ BDS 階段開始 (0x90)', type: 'milestone' });
-                if (/DxeReportStatusCode.*0x68/i.test(line))
-                    stages['dxe'].keyEvents.push({ index: i, text: '▶ PCI HB Initialization 開始 (0x68)',
-                    type: 'milestone' });
-                if (/START_MRC_RUN/i.test(line))
-                    stages['pei'].keyEvents.push({ index: i, text: '▶ MRC (記憶體訓練) 開始', type: 'milestone' });
-                if (/STOP_MRC_RUN/i.test(line))
-                    stages['pei'].keyEvents.push({ index: i, text: '✅ MRC 訓練完成', type: 'success' });
-                if (/Total MRC time/i.test(line))
-                    stages['pei'].keyEvents.push({ index: i, text: '⏱️ ' + line.trim(), type: 'success' });
+                if (/MRC.*Success/i.test(line) || /MRC.*status = Success/i.test(line))
+                    stages['pei'].keyEvents.push({ index: i, text: '✅ MRC (Memory Reference Code) 訓練成功',
+                        type: 'success' });
+                if (/Install Efi Memory/i.test(line) || /System.*Memory.*Initial/i.test(line))
+                    stages['pei'].keyEvents.push({ index: i, text: '💾 系統記憶體初始化完成', type: 'success' });
                 if (/Total Memory:/i.test(line))
                     stages['power_on'].keyEvents.push({ index: i, text: '💾 ' + line.trim(), type: 'success' });
                 if (/BIOS ID:/i.test(line))
                     stages['power_on'].keyEvents.push({ index: i, text: '🔖 ' + line.trim(), type: 'milestone' });
-                if (/Platform Name:/i.test(line))
-                    stages['power_on'].keyEvents.push({ index: i, text: '🏷️ ' + line.trim(), type: 'milestone' });
-                if (/Processor Information:/i.test(line))
-                    stages['power_on'].keyEvents.push({ index: i, text: '🔲 ' + line.trim(), type: 'milestone' });
                 if (/ERROR:/i.test(line) || /Error:/i.test(line)) {
                     const s = stages[currentStage];
                     if (s && s.keyEvents && s.keyEvents.length < 30) {
                         s.keyEvents.push({ index: i, text: '⚠️ ' + line.substring(0, 220).trim(), type: 'error' });
                     }
                 }
-                if (/SYSTEM BOOTED SUCCESSFULLY/i.test(line))
-                    stages['bds'].keyEvents.push({ index: i, text: '🎉 ' + line.trim(), type: 'success' });
-                if (/InstallProtocolInterface:.*EfiPciEnumerationComplete/i.test(line))
-                    stages['bds'].keyEvents.push({ index: i, text: '✅ PCI 枚舉完成', type: 'success' });
                 if (/ExitBootServices/i.test(line))
                     stages['rt'].keyEvents.push({ index: i, text: '🔚 ExitBootServices 調用', type: 'milestone' });
                 if (/ShutdownSuppression/i.test(line))
                     stages['al'].keyEvents.push({ index: i, text: '⚠️ ' + line.trim(), type: 'error' });
-                if (/SMM IPL opened SMRAM window/i.test(line))
-                    stages['dxe'].keyEvents.push({ index: i, text: '🔒 SMM IPL 啟動', type: 'milestone' });
             }
             return {
                 totalLines,
@@ -1024,7 +909,6 @@
                 }
             };
         }
-
         // ==================== 渲染 ====================
         function renderAll(result) {
             document.getElementById('statsContainer').style.display = 'block';
@@ -1039,7 +923,6 @@
             document.getElementById('uploadArea').querySelector('p').textContent =
                 '拖拽 BIOS 日誌檔到此處，或點擊選擇檔（可重新上傳）';
         }
-
         function renderStatsBar(result) {
             const bar = document.getElementById('statsBar');
             let html = '';
@@ -1062,7 +945,6 @@
                 });
             });
         }
-
         function renderSummaryGrid(result) {
             const grid = document.getElementById('summaryGrid');
             const s = result.stats;
@@ -1080,71 +962,83 @@
                 `<div class="summary-card"><div class="num" style="color:${c.color}">${c.num.toLocaleString()}</div><div class="lbl">${c.lbl}</div></div>`
             ).join('');
         }
-
-        function renderTabs(result) {
+function renderTabs(result) {
             const tabNav = document.getElementById('tabNav');
             const tabContents = document.getElementById('tabContents');
             let navHtml = '';
             let contentsHtml = '';
+
+            // 內部高效轉義函式
             const fastEscape = (str) => str.replace(/[&<>"']/g, m => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             }[m]));
+
             STAGE_KEYS.forEach((key, i) => {
                 const stageData = result.stages[key];
                 const count = result.stageLineCounts[key] || 0;
                 const uniqueCount = stageData ? stageData.uniqueLines.length : 0;
                 const activeClass = i === 0 ? ' active' : '';
-                navHtml +=
-                    `<button class="tab-btn${activeClass}" data-stage="${key}" onclick="switchTab('${key}')">${STAGE_NAMES[i]} <small>(${count.toLocaleString()}行 / 去重${uniqueCount.toLocaleString()})</small></button>`;
+                
+                navHtml += `<button class="tab-btn${activeClass}" data-stage="${key}" onclick="switchTab('${key}')">
+                    ${STAGE_NAMES[i]} <small>(${count.toLocaleString()}行 / 去重${uniqueCount.toLocaleString()})</small>
+                </button>`;
+
                 let contentHtml = '';
                 if (stageData && stageData.uniqueLines.length > 0) {
+                    // 1. 關鍵事件區塊
                     if (stageData.keyEvents && stageData.keyEvents.length > 0) {
-                        contentHtml +=
-                            '<div class="key-events-box" style="margin:15px;"><strong>🔑 關鍵事件:</strong><br>';
+                        contentHtml += '<div class="key-events-box" style="margin: 15px;"><strong>🔑 關鍵事件:</strong><br>';
                         stageData.keyEvents.forEach(ev => {
-                            const emoji = ev.type === 'milestone' ? '🔷' : ev.type === 'success' ?
-                                '✅' : '⚠️';
-                            contentHtml +=
-                                `  ${emoji} <span style="color:var(--accent);font-weight:600;">行#${ev.index+1}</span>: ${fastEscape(ev.text)}<br>`;
+                            const emoji = ev.type === 'milestone' ? '🔷' : ev.type === 'success' ? '✅' : '⚠️';
+                            contentHtml += `  ${emoji} <span style="color:var(--accent);font-weight:600;">行#${ev.index+1}</span>: ${fastEscape(ev.text)}<br>`;
                         });
                         contentHtml += '</div>';
                     }
+
+                    // 2. 建立日誌表格
                     let tableHtml = '<table class="log-table"><tbody>';
-                    const maxShow = Math.min(stageData.uniqueLines.length, 1200);
+                    const maxShow = Math.min(stageData.uniqueLines.length, 1200); // 稍微調高上限
+                    
                     for (let j = 0; j < maxShow; j++) {
                         const u = stageData.uniqueLines[j];
                         const isDup = u.count > 1;
                         const countTag = isDup ? `<span class="count-tag">×${u.count}</span>` : '';
-                        const dupClass = isDup ? ' dup' : '';
+                        const dupClass = isDup ? ' dup' : ''; // 只要重複就套用 dup 樣式
+                        
                         tableHtml += `
                             <tr class="log-row ${dupClass}">
                                 <td class="log-ln">${u.index + 1}</td>
                                 <td class="log-txt">${fastEscape(u.text)}${countTag}</td>
-                            </tr>`;
+                            </tr>
+                        `;
                     }
                     tableHtml += '</tbody></table>';
                     contentHtml += tableHtml;
+
                     if (stageData.uniqueLines.length > maxShow) {
-                        contentHtml +=
-                            `<div style="color:var(--text-secondary);text-align:center;padding:15px;background:#f8f9fa;border-top:1px solid #eee;">... 還有 ${(stageData.uniqueLines.length - maxShow).toLocaleString()} 條獨特日誌（因瀏覽器性能已折疊）</div>`;
+                        contentHtml += `<div style="color:var(--text-secondary);text-align:center;padding:15px;background:#f8f9fa;border-top:1px solid #eee;">
+                            ... 還有 ${(stageData.uniqueLines.length - maxShow).toLocaleString()} 條獨特日誌（因瀏覽器性能已折疊）</div>`;
                     }
                 } else {
-                    contentHtml =
-                        `<div class="empty-state"><div class="icon">🔍</div><p>${count > 0 ? '該階段日誌過多或去重異常，請查看下載報告' : '此日誌未包含該階段內容'}</p></div>`;
+                    contentHtml = `<div class="empty-state"><div class="icon">🔍</div><p>${count > 0 ? '該階段日誌過多或去重異常，請查看下載報告' : '此日誌未包含該階段內容'}</p></div>`;
                 }
-                contentsHtml +=
-                    `<div class="tab-content${activeClass}" id="tabContent_${key}"><div style="padding:10px 15px; background:#fafafa; border-bottom:1px solid #eee; color:var(--text-secondary); font-size:0.8rem;">📋 ${STAGE_NAMES[i]} 階段 — 原始 ${count.toLocaleString()} 行 → 獨特日誌 ${uniqueCount.toLocaleString()} 條</div>${contentHtml}</div>`;
+
+                contentsHtml += `<div class="tab-content${activeClass}" id="tabContent_${key}">
+                    <div style="padding:10px 15px; background:#fafafa; border-bottom:1px solid #eee; color:var(--text-secondary); font-size:0.8rem;">
+                        📋 ${STAGE_NAMES[i]} 階段 — 原始 ${count.toLocaleString()} 行 → 獨特日誌 ${uniqueCount.toLocaleString()} 條
+                    </div>
+                    ${contentHtml}
+                </div>`;
             });
+
             tabNav.innerHTML = navHtml;
             tabContents.innerHTML = contentsHtml;
+
+            // 自動跳轉到第一個有內容的標籤
             const firstActiveStage = STAGE_KEYS.find(k => (result.stageLineCounts[k] || 0) > 0) || 'power_on';
             switchTab(firstActiveStage);
         }
-
+		
         function switchTab(stageKey) {
             document.querySelectorAll('#tabNav .tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('#tabContents .tab-content').forEach(c => c.classList.remove('active'));
@@ -1156,25 +1050,25 @@
             const statBadge = document.querySelector(`.stat-badge[data-stage="${stageKey}"]`);
             if (statBadge) statBadge.classList.add('active');
         }
-
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
         // ==================== Enum 對照表 ====================
         function renderEnumTables() {
             const enumTabNav = document.getElementById('enumTabNav');
             const enumTabContents = document.getElementById('enumTabContents');
             const enumCategories = [
                 { id: 'uefi_phases', name: 'UEFI PI 啟動階段', content: buildEnumTable_Phases() },
-                { id: 'progress_codes', name: 'PROGRESS / Status CODE', content: buildEnumTable_ProgressCodes() },
+                { id: 'progress_codes', name: 'PROGRESS CODE', content: buildEnumTable_ProgressCodes() },
                 { id: 'memory_types', name: 'EfiMemoryType', content: buildEnumTable_MemoryTypes() },
                 { id: 'hob_types', name: 'HOB 類型', content: buildEnumTable_HobTypes() },
                 { id: 'pci_port_types', name: 'PCIe Port 類型', content: buildEnumTable_PciPortTypes() },
-                { id: 'pci_bar_types', name: 'PCI BAR 類型', content: buildEnumTable_PciBarTypes() },
                 { id: 'ppi_common', name: '常見 PPI GUID', content: buildEnumTable_PpiGuids() },
                 { id: 'protocol_common', name: '常見 Protocol GUID', content: buildEnumTable_ProtocolGuids() },
                 { id: 'boot_modes', name: 'Boot Mode', content: buildEnumTable_BootModes() },
                 { id: 'reset_types', name: 'Reset Type', content: buildEnumTable_ResetTypes() },
-                { id: 'smram_states', name: 'SMRAM State', content: buildEnumTable_SmramStates() },
-                { id: 'pci_dev_types', name: 'PCI Device Type', content: buildEnumTable_PciDevTypes() },
-                { id: 'image_types', name: 'UEFI Image Type', content: buildEnumTable_ImageTypes() },
             ];
             let navHtml = '';
             let contentsHtml = '';
@@ -1188,7 +1082,6 @@
             enumTabNav.innerHTML = navHtml;
             enumTabContents.innerHTML = contentsHtml;
         }
-
         function switchEnumTab(id) {
             document.querySelectorAll('#enumTabNav .tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('#enumTabContents .tab-content').forEach(c => c.classList.remove('active'));
@@ -1197,60 +1090,43 @@
             if (btn) btn.classList.add('active');
             if (content) content.classList.add('active');
         }
-
-        function buildTable(headers, rows) {
-            let html = '<table class="enum-table"><thead><tr>';
-            headers.forEach(h => html += `<th>${h}</th>`);
-            html += '</tr></thead><tbody>';
-            rows.forEach(row => {
-                html += '<tr>';
-                row.forEach(cell => html += `<td>${cell}</td>`);
-                html += '</tr>';
-            });
-            html += '</tbody></table>';
-            return html;
-        }
-
         function buildEnumTable_Phases() {
             const data = [
-                ['Power On', '上電', '平台電源開啟，硬體初始化', 'G3 → S5，早期CPU/記憶體探測、BIOS ID輸出'],
-                ['SEC', 'Security Phase', 'CPU初始化、CAR設置、驗證PEI Core', 'Pre-EFI Initialization，Temp RAM，SecPlatformInfo'],
-                ['PEI', 'Pre-EFI Initialization', '記憶體初始化、MRC訓練、準備DXE環境', 'PEIM載入、PPI服務、KTI Init、MRC Run'],
-                ['DXE', 'Driver Execution Environment', '驅動載入、PCI枚舉、SMM初始化', 'Protocol服務、UEFI驅動、PCI Host Bridge Init'],
-                ['BDS', 'Boot Device Selection', '啟動設備選擇、Console初始化', 'Boot Manager、Boot Option、PCI Bus Start'],
-                ['TSL', 'Transient System Load', 'OS Boot Loader載入', '過渡階段，載入OS Kernel，ReadyToBoot'],
-                ['RT', 'Runtime', 'OS運行、UEFI Runtime Services', 'SMM持續運行、ACPI服務、ExitBootServices'],
-                ['AL', 'Afterlife / Shutdown', '系統關機/重啟', 'S5/G3狀態，Power Cycle，ShutdownSuppression'],
+                ['Power On', '上電', '平台電源開啟，硬體初始化', 'G3 → S5，早期CPU/記憶體探測'],
+                ['SEC', 'Security Phase', 'CPU初始化、CAR設置、驗證PEI Core', 'Pre-EFI Initialization，Temp RAM'],
+                ['PEI', 'Pre-EFI Initialization', '記憶體初始化、MRC訓練、準備DXE環境', 'PEIM載入、PPI服務'],
+                ['DXE', 'Driver Execution Environment', '驅動載入、PCI枚舉、SMM初始化', 'Protocol服務、UEFI驅動'],
+                ['BDS', 'Boot Device Selection', '啟動設備選擇、Console初始化', 'Boot Manager、Boot Option'],
+                ['TSL', 'Transient System Load', 'OS Boot Loader載入', '過渡階段，載入OS Kernel'],
+                ['RT', 'Runtime', 'OS運行、UEFI Runtime Services', 'SMM持續運行、ACPI服務'],
+                ['AL', 'Afterlife / Shutdown', '系統關機/重啟', 'S5/G3狀態，Power Cycle'],
             ];
             return buildTable(['階段', '全稱', '描述', '關鍵特徵'], data);
         }
-
         function buildEnumTable_ProgressCodes() {
             const data = [
                 ['V03020002', 'PEI', 'PEIM 開始載入 (PROGRESS CODE)'],
                 ['V03020003', 'PEI', 'PEIM 載入完成'],
-                ['V03041000', 'DXE', 'DXE Core 啟動 (對應 Status 0x60)'],
-                ['V03021001', 'PEI', 'DXE IPL 啟動 (對應 Status 0x4F)'],
+                ['V03041000', 'DXE', 'DXE Core 啟動 (對應 0x60)'],
+                ['V03021001', 'PEI', 'DXE IPL 啟動 (對應 0x4F)'],
                 ['V00060001', 'PEI', 'Platform Init 開始階段'],
+                ['V00060002', 'PEI', 'Platform Init 完成階段'],
                 ['V00011001', 'PEI', 'CPU Cache 初始化 (對應 0x33)'],
                 ['V03038Axx', 'PEI', 'TPM 相關操作 (可變子碼)'],
                 ['0x60', 'DXE', 'DXE Core Started'],
-                ['0x68', 'DXE', 'PCI Host Bridge Init (PCI HB Initialization)'],
+                ['0x68', 'DXE', 'PCI Host Bridge Init'],
                 ['0x70', 'DXE', 'SB DXE Initialization'],
                 ['0x90', 'BDS', 'BDS Started'],
                 ['0x91', 'BDS', 'Connecting Drivers'],
-                ['0x92', 'BDS', 'PCI Bus Initialization (StartPciDevices)'],
-                ['0x94', 'BDS', 'PCI Bus Enumeration (Probing devices)'],
-                ['0x95', 'BDS', 'PCI Bus Request Resources'],
-                ['0x96', 'BDS', 'PCI Bus Assign Resources'],
-                ['0x97', 'TSL', 'Console Output devices connect'],
-                ['0x99', 'TSL', 'SIO Initialization'],
-                ['0x9A', 'TSL', 'USB Initialization'],
-                ['0x9B', 'TSL', 'USB Detect'],
+                ['0x92', 'BDS', 'PCI Bus Initialization'],
+                ['0x94', 'BDS', 'PCI Bus Enumeration'],
+                ['0x97', 'BDS', 'Console Output devices connect'],
+                ['0x99', 'BDS', 'SIO Initialization'],
+                ['0x9A', 'BDS', 'USB Initialization'],
+                ['0x9B', 'BDS', 'USB Detect'],
             ];
             return buildTable(['Code', '階段', '說明'], data);
         }
-
         function buildEnumTable_MemoryTypes() {
             const data = [
                 ['0x00 (EfiReservedMemoryType)', '保留記憶體', '不可使用'],
@@ -1271,7 +1147,6 @@
             ];
             return buildTable(['值', '名稱', '說明'], data);
         }
-
         function buildEnumTable_HobTypes() {
             const data = [
                 ['0x0001 (EFI_HOB_TYPE_HANDOFF)', 'PHIT HOB', '記憶體邊界資訊'],
@@ -1287,35 +1162,21 @@
             ];
             return buildTable(['值', '名稱', '說明'], data);
         }
-
         function buildEnumTable_PciPortTypes() {
             const data = [
                 ['0x0 (PCI_EXP_PCIE_ENDPOINT)', 'PCIe Endpoint', '標準PCIe端點設備'],
                 ['0x1 (PCI_EXP_PCIE_LEGACY_ENDPOINT)', 'Legacy Endpoint', '傳統PCIe端點'],
-                ['0x4 (PCI_EXP_ROOT_PORT)', 'Root Port', 'PCIe根埠 (如 VRP)'],
+                ['0x4 (PCI_EXP_ROOT_PORT)', 'Root Port', 'PCIe根埠'],
                 ['0x5 (PCI_EXP_UPSTREAM_PORT)', 'Upstream Port', 'Switch上游埠'],
                 ['0x6 (PCI_EXP_DOWNSTREAM_PORT)', 'Downstream Port', 'Switch下游埠'],
                 ['0x7 (PCI_EXP_PCI_BRIDGE)', 'PCIe-to-PCI Bridge', 'PCIe到PCI橋接'],
                 ['0x8 (PCI_EXP_PCIE_BRIDGE)', 'PCI-to-PCIe Bridge', 'PCI到PCIe橋接'],
-                ['0x9 (PCI_EXP_ROOT_COMPLEX_INTEGRATED)', 'RCiEP', 'RC集成端點 (如IIO內部設備)'],
-                ['0xA (PCI_EXP_ROOT_COMPLEX_EVENT_COLLECTOR)', 'RCEC', 'RC事件收集器 (如Trace Hub)'],
+                ['0x9 (PCI_EXP_ROOT_COMPLEX_INTEGRATED)', 'RCiEP', 'RC集成端點'],
+                ['0xA (PCI_EXP_ROOT_COMPLEX_EVENT_COLLECTOR)', 'RCEC', 'RC事件收集器'],
                 ['0xB (CXL Device)', 'CXL Device', 'CXL Type-1/2/3設備'],
             ];
             return buildTable(['值', '名稱', '說明'], data);
         }
-
-        function buildEnumTable_PciBarTypes() {
-            const data = [
-                ['Type=2 / BAR_TYPE=2', 'I/O BAR (16-bit)', '傳統I/O空間映射，通常 <= 256 bytes'],
-                ['Type=3 / BAR_TYPE=3', 'I/O BAR (32-bit)', '32-bit I/O空間映射'],
-                ['Type=4 / BAR_TYPE=4', 'MMIO32 BAR', '32-bit 記憶體映射I/O，< 4GB'],
-                ['Type=5 / BAR_TYPE=5', 'MMIO32 Prefetchable BAR', '32-bit 可預取記憶體映射I/O'],
-                ['Type=6 / BAR_TYPE=6', 'MMIO64 BAR', '64-bit 記憶體映射I/O，< 4GB'],
-                ['Type=7 / BAR_TYPE=7', 'MMIO64 Prefetchable BAR', '64-bit 可預取記憶體映射I/O，可 > 4GB'],
-            ];
-            return buildTable(['類型', '名稱', '說明'], data);
-        }
-
         function buildEnumTable_PpiGuids() {
             const data = [
                 ['8C8CE578-8A3D-4F1C...', 'EfiPeiSecurity2 PPI', 'PEI安全服務'],
@@ -1332,25 +1193,19 @@
                 ['EfiPeiStall', 'EfiPeiStall PPI', '延遲服務'],
                 ['EfiPeiCpuIoPpiInstalledGuid', 'CPU I/O PPI', 'CPU I/O服務'],
                 ['EfiPeiPciCfg2', 'PCI CFG PPI', 'PCI配置空間訪問'],
-                ['PeiSecPerformance', 'SEC Performance PPI', 'SEC效能數據'],
-                ['AmiReadyToLoadDxeCore', 'AMI ReadyToLoadDxeCore PPI', 'AMI DXE載入就緒信號'],
             ];
             return buildTable(['GUID/名稱', 'PPI 名稱', '說明'], data);
         }
-
         function buildEnumTable_ProtocolGuids() {
             const data = [
                 ['EfiLoadedImage', 'Loaded Image Protocol', '鏡像載入資訊'],
                 ['EfiPciRootBridgeIo', 'PCI Root Bridge I/O', 'PCI根橋I/O'],
-                ['EfiPciIo', 'PCI I/O Protocol', 'PCI設備I/O'],
                 ['EfiDriverBinding', 'Driver Binding', '驅動綁定'],
                 ['EfiCpuArch', 'CPU Arch Protocol', 'CPU架構服務'],
                 ['EfiSmbios', 'SMBIOS Protocol', 'SMBIOS表管理'],
-                ['EfiAcpiTable / EfiAcpiSdt', 'ACPI Table Protocol', 'ACPI表管理'],
+                ['EfiAcpiTable', 'ACPI Table Protocol', 'ACPI表管理'],
                 ['EfiSmmBase2', 'SMM Base 2 Protocol', 'SMM基礎服務'],
                 ['EfiSmmCpu', 'SMM CPU Protocol', 'SMM CPU服務'],
-                ['EfiSmmAccess2', 'SMM Access 2 Protocol', 'SMRAM訪問'],
-                ['EfiSmmControl2', 'SMM Control 2 Protocol', 'SMM控制'],
                 ['EfiVariableArch', 'Variable Arch Protocol', '變數服務'],
                 ['EfiBdsArch', 'BDS Arch Protocol', 'BDS架構服務'],
                 ['EfiSecurity2Arch', 'Security2 Arch Protocol', '安全架構服務'],
@@ -1366,24 +1221,18 @@
                 ['EfiGraphicsOutput', 'GOP Protocol', '圖形輸出'],
                 ['EfiSimpleTextOut', 'Simple Text Output', '文字輸出'],
                 ['EfiUsb', 'USB Protocol', 'USB堆疊'],
+                ['EfiPciIo', 'PCI I/O Protocol', 'PCI設備I/O'],
                 ['EfiDevicePath', 'Device Path Protocol', '設備路徑'],
                 ['EfiDiskIo', 'Disk I/O Protocol', '磁盤I/O'],
                 ['EfiBlockIo', 'Block I/O Protocol', '塊設備I/O'],
-                ['EfiPciEnumerationComplete', 'PCI Enumeration Complete', 'PCI枚舉完成通知'],
-                ['EfiDecompress', 'Decompress Protocol', '解壓縮服務'],
-                ['EfiFirmwareVolumeBlock', 'FV Block Protocol', '韌體卷塊訪問'],
-                ['EfiFirmwareVolume2', 'Firmware Volume 2 Protocol', '韌體卷訪問'],
-                ['EfiTlsServiceBinding', 'TLS Service Binding', 'TLS服務'],
-                ['AmiBoardInfo2', 'AMI Board Info 2 Protocol', 'AMI主機板資訊'],
             ];
             return buildTable(['GUID/名稱', 'Protocol 名稱', '說明'], data);
         }
-
         function buildEnumTable_BootModes() {
             const data = [
-                ['0x00 (BOOT_WITH_FULL_CONFIGURATION)', '完整配置啟動', '正常完整開機 (NormalBoot)'],
+                ['0x00 (BOOT_WITH_FULL_CONFIGURATION)', '完整配置啟動', '正常完整開機'],
                 ['0x01 (BOOT_WITH_MINIMAL_CONFIGURATION)', '最小配置啟動', '最低硬體配置'],
-                ['0x02 (BOOT_ASSUMING_NO_CONFIGURATION_CHANGES)', '無配置變更啟動', '快速開機 (ColdBootFast)'],
+                ['0x02 (BOOT_ASSUMING_NO_CONFIGURATION_CHANGES)', '無配置變更啟動', '快速開機'],
                 ['0x03 (BOOT_WITH_FULL_CONFIGURATION_PLUS_DIAGNOSTICS)', '完整配置+診斷', '含診斷模式'],
                 ['0x04 (BOOT_WITH_DEFAULT_SETTINGS)', '默認設置啟動', '載入出廠默認值'],
                 ['0x05 (BOOT_ON_S4_RESUME)', 'S4恢復', '從休眠恢復'],
@@ -1395,7 +1244,6 @@
             ];
             return buildTable(['值', '名稱', '說明'], data);
         }
-
         function buildEnumTable_ResetTypes() {
             const data = [
                 ['EfiResetCold', '冷開機', '完全硬體重置，斷電重啟'],
@@ -1405,37 +1253,18 @@
             ];
             return buildTable(['類型', '名稱', '說明'], data);
         }
-
-        function buildEnumTable_SmramStates() {
-            const data = [
-                ['0x00 (SMRAM_OPEN)', 'SMRAM Open', 'SMRAM可訪問'],
-                ['0x01 (SMRAM_CLOSED)', 'SMRAM Closed', 'SMRAM鎖定不可訪問'],
-                ['0x02 (SMRAM_LOCKED)', 'SMRAM Locked', 'SMRAM鎖定且不可解鎖'],
-                ['0x08 (Cacheable)', '快取啟用', 'SMRAM區域啟用快取'],
-            ];
-            return buildTable(['值', '狀態', '說明'], data);
+        function buildTable(headers, rows) {
+            let html = '<table class="enum-table"><thead><tr>';
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += '</tr></thead><tbody>';
+            rows.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => html += `<td>${cell}</td>`);
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            return html;
         }
-
-        function buildEnumTable_PciDevTypes() {
-            const data = [
-                ['Type=2', 'PCI-PCI Bridge', 'PCI橋接設備 (含 PCIe Root Port)'],
-                ['Type=4', 'PCI Device (non-PCIe)', '傳統PCI設備'],
-                ['Type=5', 'PCIe Endpoint', 'PCIe端點設備'],
-            ];
-            return buildTable(['值', '設備類型', '說明'], data);
-        }
-
-        function buildEnumTable_ImageTypes() {
-            const data = [
-                ['0x01 (EFI_IMAGE_SUBSYSTEM_EFI_APPLICATION)', 'UEFI Application', 'UEFI應用程式'],
-                ['0x02 (EFI_IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER)', 'BS Driver', 'Boot Service驅動'],
-                ['0x03 (EFI_IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER)', 'RT Driver', 'Runtime驅動'],
-                ['0x0B (EFI_IMAGE_SUBSYSTEM_EFI_ROM)', 'Option ROM', 'PCI Option ROM'],
-                ['0x0C (EFI_IMAGE_SUBSYSTEM_SAL_RUNTIME_DRIVER)', 'SAL RT Driver', 'Itanium SAL驅動'],
-            ];
-            return buildTable(['值', '類型', '說明'], data);
-        }
-
         // ==================== 下載報告 ====================
         function downloadReport() {
             if (!analysisResult) { alert('請先上傳並分析日誌檔');
@@ -1452,61 +1281,60 @@
             URL.revokeObjectURL(url);
             showToast('📥 報告下載中...');
         }
-
+		
         function generateReportHTML() {
             const r = analysisResult;
             let sections = '';
+            
+            // 建立簡易轉義函式
             const esc = (str) => str.replace(/[&<>"']/g, m => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             }[m]));
+
             STAGE_KEYS.forEach((k, i) => {
                 const sd = r.stages[k];
                 const count = r.stageLineCounts[k] || 0;
                 const uniqueCount = sd ? sd.uniqueLines.length : 0;
                 const color = STAGE_COLORS[i];
+                
                 let eventsHtml = '';
                 if (sd && sd.keyEvents && sd.keyEvents.length > 0) {
-                    eventsHtml =
-                        '<div style="background:#fffdf5;border-left:4px solid #b8860b;padding:10px;margin:10px 0;font-size:13px;"><strong>🔑 關鍵事件:</strong><br>';
+                    eventsHtml = '<div style="background:#fffdf5;border-left:4px solid #b8860b;padding:10px;margin:10px 0;font-size:13px;"><strong>🔑 關鍵事件:</strong><br>';
                     sd.keyEvents.forEach(ev => {
-                        eventsHtml +=
-                            `&nbsp;&nbsp;${ev.type==='milestone'?'🔷':ev.type==='success'?'✅':'⚠️'} 行#${ev.index+1}: ${esc(ev.text)}<br>`;
+                        eventsHtml += `&nbsp;&nbsp;${ev.type==='milestone'?'🔷':ev.type==='success'?'✅':'⚠️'} 行#${ev.index+1}: ${esc(ev.text)}<br>`;
                     });
                     eventsHtml += '</div>';
                 }
+
                 let rowsHtml = '';
                 if (sd && sd.uniqueLines.length > 0) {
-                    const max = Math.min(sd.uniqueLines.length, 2000);
-                    rowsHtml =
-                        '<table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:12px;border:1px solid #eee;">';
+                    const max = Math.min(sd.uniqueLines.length, 2000); // 報告可以看多一點
+                    rowsHtml = '<table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:12px;border:1px solid #eee;">';
                     for (let j = 0; j < max; j++) {
                         const u = sd.uniqueLines[j];
                         rowsHtml += `
-                            <tr style="border-bottom:1px solid #f9f9f9;${u.count>1?'color:#999;font-style:italic;':''}">
+                            <tr style="border-bottom:1px solid #f9f9f9; ${u.count > 1 ? 'color:#999;font-style:italic;' : ''}">
                                 <td style="width:60px;text-align:right;padding:2px 10px;background:#f5f5f5;color:#aaa;user-select:none;border-right:1px solid #eee;">${u.index+1}</td>
-                                <td style="padding:2px 10px;word-break:break-all;">${esc(u.text)}${u.count>1?'<span style="background:#eee;padding:0 4px;border-radius:4px;">x'+u.count+'</span>':''}</td>
+                                <td style="padding:2px 10px;word-break:break-all;">${esc(u.text)} ${u.count > 1 ? '<span style="background:#eee;padding:0 4px;border-radius:4px;">x'+u.count+'</span>' : ''}</td>
                             </tr>`;
                     }
                     rowsHtml += '</table>';
-                    if (sd.uniqueLines.length > max) rowsHtml +=
-                        `<p style="color:#999;text-align:center;">... 還有 ${sd.uniqueLines.length - max} 條已省略</p>`;
+                    if (sd.uniqueLines.length > max) rowsHtml += `<p style="color:#999;text-align:center;">... 還有 ${sd.uniqueLines.length - max} 條已省略</p>`;
                 }
+
                 sections += `
                     <h2 style="color:${color};border-bottom:2px solid ${color};padding-bottom:5px;margin-top:30px;">${STAGE_NAMES[i]} (${count}行 / 去重${uniqueCount})</h2>
                     ${eventsHtml}
                     ${rowsHtml || '<p style="color:#ccc;">無內容</p>'}
                 `;
             });
+
             return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>BIOS 分析報告</title></head>
                     <body style="max-width:1200px;margin:0 auto;padding:20px;font-family:sans-serif;color:#333;">
                     <h1>🔧 BIOS/UEFI Code Flow 分析報告</h1><p>總行數: ${r.totalLines} | 生成時間: ${new Date().toLocaleString()}</p>
                     <hr>${sections}<hr><p style="text-align:center;color:#999;">Generated by BIOS Log Analyzer</p></body></html>`;
         }
-
+		
         function resetAll() {
             analysisResult = null;
             document.getElementById('statsContainer').style.display = 'none';
@@ -1524,7 +1352,6 @@
             fileInput.value = '';
             showToast('🔄 已清除，請上傳新的日誌檔');
         }
-
         function showToast(msg) {
             const existing = document.querySelector('.toast');
             if (existing) existing.remove();
@@ -1534,6 +1361,7 @@
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 2600);
         }
+        // ==================== 初始化 ====================
         document.getElementById('btnLoadSample').addEventListener('click', function() {
             if (analysisResult) {
                 showToast('✅ 已載入當前分析結果');
@@ -1542,11 +1370,16 @@
             }
             fileInput.click();
         });
+        // 鍵盤快速鍵
         document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'o') { e.preventDefault();
-                fileInput.click(); }
-            if (e.ctrlKey && e.key === 's' && analysisResult) { e.preventDefault();
-                downloadReport(); }
+            if (e.ctrlKey && e.key === 'o') {
+                e.preventDefault();
+                fileInput.click();
+            }
+            if (e.ctrlKey && e.key === 's' && analysisResult) {
+                e.preventDefault();
+                downloadReport();
+            }
             if (e.ctrlKey && e.key >= '1' && e.key <= '8') {
                 e.preventDefault();
                 const idx = parseInt(e.key) - 1;
@@ -1556,7 +1389,7 @@
                 }
             }
         });
-        console.log('🔧 BIOS/UEFI Boot Log Analyzer 已就緒 (增強版)');
+        console.log('🔧 BIOS/UEFI Boot Log Analyzer 已就緒 (白底版)');
         console.log('支持快速鍵: Ctrl+O 打開文件 | Ctrl+1~8 切換階段標籤 | Ctrl+S 下載報告');
         console.log('支持拖拽上傳 .log/.txt 文件');
     </script>
